@@ -1,7 +1,7 @@
 
 # WIREFRAMES.md
 
-Wireframe images were created using the FigmaAI tool to visualize layout, UI elements, and page structure. These are not final designs, but structural references for when I start designing. It did not generate any HTML/CSS. 
+Wireframe images were created using the FigmaAI tool to visualize layout, UI elements, and page structure. These are not final designs, but structural references for when I start designing. I used this to help visualize the navigation and UI elements. It did not generate any HTML/CSS. 
 
 --- 
 
