@@ -22,15 +22,25 @@ const napStart = ref('')
 const napEnd = ref('')
 const feltRestedAfter = ref('neutral')
 
-// mood
-const mood = ref('')
+// mood — array so multiple can be selected at once, toggle pattern like MedicationView
+const mood = ref([])
 const moodStates = ['depressed', 'heavy', 'sad', 'meh', 'neutral', 'positive', 'happy']
 const moodReason = ref('no clear reason')
 
-// stress
-const stress = ref('')
+function toggleMood(state) {
+  const i = mood.value.indexOf(state)
+  i > -1 ? mood.value.splice(i, 1) : mood.value.push(state)
+}
+
+// stress — same multi-select pattern
+const stress = ref([])
 const stressStates = ['understimulated', 'stress-free', 'balanced', 'debilitating', 'paralyzing']
 const stressReason = ref('no clear reason')
+
+function toggleStress(state) {
+  const i = stress.value.indexOf(state)
+  i > -1 ? stress.value.splice(i, 1) : stress.value.push(state)
+}
 
 const reasons = [
   'no clear reason',
@@ -122,7 +132,7 @@ async function saveNap() {
 }
 
 async function saveMood() {
-  if (!mood.value) { message.value = 'Pick a mood first :)'; return }
+  if (!mood.value.length) { message.value = 'Pick a mood first :)'; return }
 
   await logsStore.saveMood(today, {
     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -131,12 +141,13 @@ async function saveMood() {
   })
 
   message.value = 'Mood logged'
-  mood.value = ''
+  mood.value = []
   moodReason.value = 'no clear reason'
+  await logsStore.fetchTodayLog(today)
 }
 
 async function saveStress() {
-  if (!stress.value) { message.value = 'Pick your stress level first :)'; return }
+  if (!stress.value.length) { message.value = 'Pick your stress level first :)'; return }
 
   await logsStore.saveStress(today, {
     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -145,8 +156,9 @@ async function saveStress() {
   })
 
   message.value = 'Stress logged'
-  stress.value = ''
+  stress.value = []
   stressReason.value = 'no clear reason'
+  await logsStore.fetchTodayLog(today)
 }
 </script>
 
@@ -171,18 +183,19 @@ async function saveStress() {
       </div>
       <form @submit.prevent="saveSleep">
         <label>Bed time</label>
-        <input type="time" v-model="bedTime" />
+        <input type="text" v-model="bedTime" placeholder="HH:MM" />
 
         <label>Wake time</label>
-        <input type="time" v-model="wakeTime" />
+        <input type="text" v-model="wakeTime" placeholder="HH:MM" />
 
         <label>Sleep state</label>
         <div>
           <button v-for="state in sleepStates" :key="state" type="button"
+            :data-sleep="state"
             :class="{ selected: sleepState === state }" @click="sleepState = state">{{ state }}</button>
         </div>
 
-        <button type="submit">Save sleep</button>
+        <button type="submit"  class="btn-save">Save sleep</button>
       </form>
       <p v-if="calculatedHours">Hours: {{ calculatedHours }}</p>
     </section>
@@ -198,7 +211,8 @@ async function saveStress() {
         <label>How are you feeling?</label>
         <div>
           <button v-for="state in moodStates" :key="state" type="button"
-            :class="{ selected: mood === state }" @click="mood = state">{{ state }}</button>
+            :data-mood="state"
+            :class="{ selected: mood.includes(state) }" @click="toggleMood(state)">{{ state }}</button>
         </div>
 
         <label>Why?</label>
@@ -207,8 +221,22 @@ async function saveStress() {
             :class="{ selected: moodReason === reason }" @click="moodReason = reason">{{ reason }}</button>
         </div>
 
-        <button type="submit">Save mood</button>
+        <button type="submit" class="btn-save">Save mood</button>
       </form>
+
+      <!-- today's mood entries -->
+      <div v-if="logsStore.todayLog?.moodLogs?.length" class="entries-list">
+        <div class="ct" style="margin-top: 16px;">
+          <div class="ct-line"></div>
+          <div class="ct-inner"><span>♡</span><span>Today's entries</span><span>♡</span></div>
+          <div class="ct-line"></div>
+        </div>
+        <div v-for="entry in logsStore.todayLog.moodLogs" :key="entry._id" class="entry-row">
+          <span class="entry-time">{{ entry.time }}</span>
+          <span class="entry-value">{{ Array.isArray(entry.value) ? entry.value.join(', ') : entry.value }}</span>
+          <span class="entry-reason" v-if="entry.reason && entry.reason !== 'no clear reason'">· {{ entry.reason }}</span>
+        </div>
+      </div>
     </section>
 
     <!-- STRESS -->
@@ -222,7 +250,8 @@ async function saveStress() {
         <label>Current stress level</label>
         <div>
           <button v-for="state in stressStates" :key="state" type="button"
-            :class="{ selected: stress === state }" @click="stress = state">{{ state }}</button>
+            :data-stress="state"
+            :class="{ selected: stress.includes(state) }" @click="toggleStress(state)">{{ state }}</button>
         </div>
 
         <label>Why?</label>
@@ -231,8 +260,22 @@ async function saveStress() {
             :class="{ selected: stressReason === reason }" @click="stressReason = reason">{{ reason }}</button>
         </div>
 
-        <button type="submit">Save stress level</button>
+        <button type="submit" class="btn-save">Save stress level</button>
       </form>
+
+      <!-- today's stress entries -->
+      <div v-if="logsStore.todayLog?.stressLogs?.length" class="entries-list">
+        <div class="ct" style="margin-top: 16px;">
+          <div class="ct-line"></div>
+          <div class="ct-inner"><span>⋆</span><span>Today's entries</span><span>⋆</span></div>
+          <div class="ct-line"></div>
+        </div>
+        <div v-for="entry in logsStore.todayLog.stressLogs" :key="entry._id" class="entry-row">
+          <span class="entry-time">{{ entry.time }}</span>
+          <span class="entry-value">{{ Array.isArray(entry.value) ? entry.value.join(', ') : entry.value }}</span>
+          <span class="entry-reason" v-if="entry.reason && entry.reason !== 'no clear reason'">· {{ entry.reason }}</span>
+        </div>
+      </div>
     </section>
 
     <!-- NAPS -->
@@ -255,11 +298,11 @@ async function saveStress() {
             :class="{ selected: feltRestedAfter === state }" @click="feltRestedAfter = state">{{ state }}</button>
         </div>
 
-        <button type="submit">Save nap</button>
+        <button type="submit"  class="btn-save">Save nap</button>
       </form>
       <p v-if="calculatedHours">Hours: {{ calculatedHours }}</p>
     </section>
 
-    <p v-if="message">{{ message }}</p>
+    <p v-if="message" class="message">{{ message }}</p>
   </main>
 </template>

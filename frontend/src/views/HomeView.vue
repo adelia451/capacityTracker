@@ -2,10 +2,15 @@
 import { onMounted } from 'vue'
 import { useLogsStore } from '../stores/logs'
 import { useCapacityStore } from '../stores/capacity'
+import CapacityGauge from '../components/CapacityGauge.vue'
 
 const logsStore = useLogsStore()
 const capacityStore = useCapacityStore()
 const today = new Date().toLocaleDateString('en-CA')
+
+const dateDisplay = new Date().toLocaleDateString('en-US', {
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+})
 
 onMounted(async () => {
   await logsStore.fetchTodayLog(today)
@@ -17,60 +22,52 @@ onMounted(async () => {
 <template>
   <main>
     <!-- TODAY'S SUMMARY -->
-    <!-- quick snapshot of what's been logged today -->
     <section class="card card-pink">
       <div class="ct">
         <div class="ct-line"></div>
-        <div class="ct-inner"><span>✦</span><span>Today</span><span>✦</span></div>
+        <div class="ct-inner"><span>✦</span><span>{{ dateDisplay }}</span><span>✦</span></div>
         <div class="ct-line"></div>
       </div>
 
-      <!-- capacity score — replace with actual field name once you check the API response -->
-      <div>
-        <span>Capacity</span>
-        <span v-if="capacityStore.score">{{ capacityStore.score?.score ?? '-' }}</span>
-        <span v-else>—</span>
+      <div class="summary-row" style="align-items: flex-start; gap: 16px;">
+        <CapacityGauge v-if="capacityStore.score?.score != null" :score="capacityStore.score.score" />
+        <div v-else class="summary-value muted">capacity not logged yet</div>
       </div>
 
-      <!-- sleep summary — logsStore.todayLog holds the full log object -->
-      <div v-if="logsStore.todayLog?.sleep?.hours">
-        <span>Sleep</span>
-        <span>{{ logsStore.todayLog.sleep.hours }}h — {{ logsStore.todayLog.sleep.state }}</span>
+      <div class="summary-row" v-if="logsStore.todayLog?.sleep?.hours">
+        <span class="summary-label">Sleep</span>
+        <span class="summary-value">{{ logsStore.todayLog.sleep.hours }}h — {{ logsStore.todayLog.sleep.state }}</span>
       </div>
-      <div v-else>
-        <span>Sleep</span>
-        <span>not logged yet</span>
-      </div>
-
-      <!-- medication status -->
-      <div v-if="logsStore.todayLog?.medication?.takenAt">
-        <span>Medication</span>
-        <span>taken at {{ logsStore.todayLog.medication.takenAt }}</span>
-      </div>
-      <div v-else-if="logsStore.todayLog?.medication?.skipped">
-        <span>Medication</span>
-        <span>skipped</span>
-      </div>
-      <div v-else>
-        <span>Medication</span>
-        <span>not logged yet</span>
+      <div class="summary-row" v-else>
+        <span class="summary-label">Sleep</span>
+        <span class="summary-value muted">not logged yet</span>
       </div>
 
-      <!-- mood entries today -->
-      <div v-if="logsStore.todayLog?.moodLogs?.length">
-        <span>Mood entries</span>
-        <span>{{ logsStore.todayLog.moodLogs.length }} logged</span>
+      <div class="summary-row" v-if="logsStore.todayLog?.medication?.takenAt">
+        <span class="summary-label">Medication</span>
+        <span class="summary-value">taken at {{ logsStore.todayLog.medication.takenAt }}</span>
+      </div>
+      <div class="summary-row" v-else-if="logsStore.todayLog?.medication?.skipped">
+        <span class="summary-label">Medication</span>
+        <span class="summary-value">skipped</span>
+      </div>
+      <div class="summary-row" v-else>
+        <span class="summary-label">Medication</span>
+        <span class="summary-value muted">not logged yet</span>
       </div>
 
-      <!-- stress entries today -->
-      <div v-if="logsStore.todayLog?.stressLogs?.length">
-        <span>Stress entries</span>
-        <span>{{ logsStore.todayLog.stressLogs.length }} logged</span>
+      <div class="summary-row" v-if="logsStore.todayLog?.moodLogs?.length">
+        <span class="summary-label">Mood</span>
+        <span class="summary-value">{{ logsStore.todayLog.moodLogs.length }} logged</span>
+      </div>
+
+      <div class="summary-row" v-if="logsStore.todayLog?.stressLogs?.length">
+        <span class="summary-label">Stress</span>
+        <span class="summary-value">{{ logsStore.todayLog.stressLogs.length }} logged</span>
       </div>
     </section>
 
     <!-- INSIGHTS -->
-    <!-- patterns the system has learned from your data (needs 7+ days of logs) -->
     <section class="card card-blue">
       <div class="ct">
         <div class="ct-line"></div>
@@ -79,7 +76,10 @@ onMounted(async () => {
       </div>
       <div v-if="!capacityStore.insights">Loading...</div>
       <div v-else>
-        <p v-for="insight in capacityStore.insights" :key="insight">{{ insight }}</p>
+        <div v-for="(insight, i) in capacityStore.insights" :key="insight"
+          class="insight-card" :class="i % 3 === 0 ? 'insight-blue' : i % 3 === 1 ? 'insight-pink' : 'insight-peri'">
+          {{ insight }}
+        </div>
       </div>
     </section>
   </main>

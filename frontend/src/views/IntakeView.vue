@@ -134,19 +134,16 @@ async function saveMed() {
 
         <div v-else>
           <label>Taken at</label>
-          <input type="time" v-model="takenAt" />
+          <input type="text" v-model="takenAt" placeholder="HH:MM" />
 
           <label>Felt onset</label>
-          <input type="time" v-model="feltOnset" />
+          <input type="text" v-model="feltOnset" placeholder="HH:MM" />
 
           <label>Felt peak</label>
-          <input type="time" v-model="feltPeak" />
+          <input type="text" v-model="feltPeak" placeholder="HH:MM" />
 
           <label>Felt end</label>
-          <input type="time" v-model="feltEnd" />
-
-          <label>Focus capacity (hours)</label>
-          <input type="number" v-model="focusCapacityHours" />
+          <input type="text" v-model="feltEnd" placeholder="HH:MM" />
 
           <label>Med quality</label>
           <div>
@@ -161,9 +158,12 @@ async function saveMed() {
               :class="{ selected: focusQuality.includes(option) }"
               @click="toggleFocusQuality(option)">{{ option }}</button>
           </div>
+
+          <label>Focus capacity (hours)</label>
+          <input type="number" v-model="focusCapacityHours" />
         </div>
 
-        <button type="submit">Save</button>
+        <button type="submit"  class="btn-save">Save</button>
       </form>
     </section>
 
@@ -187,6 +187,6 @@ async function saveMed() {
       <p>Coming after submission</p>
     </section>
 
-    <p v-if="message">{{ message }}</p>
+    <p v-if="message" class="message">{{ message }}</p>
   </main>
 </template>
