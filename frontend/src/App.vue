@@ -4,7 +4,7 @@ import { onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const routes = ['/', '/capacity', '/tasks', '/mood', '/sleep', '/medication', '/intake', '/history']
+const routes = ['/', '/capacity', '/tasks', '/rest-mood', '/intake', '/history']
 
 function handleKeydown(e) {
   if (!e.altKey) return

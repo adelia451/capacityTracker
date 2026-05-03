@@ -16,12 +16,14 @@ onMounted(async () => {
 
 <template>
   <main>
-    <h1>Home</h1>
-
     <!-- TODAY'S SUMMARY -->
     <!-- quick snapshot of what's been logged today -->
-    <section>
-      <h2>Today</h2>
+    <section class="card card-pink">
+      <div class="ct">
+        <div class="ct-line"></div>
+        <div class="ct-inner"><span>✦</span><span>Today</span><span>✦</span></div>
+        <div class="ct-line"></div>
+      </div>
 
       <!-- capacity score — replace with actual field name once you check the API response -->
       <div>
@@ -69,8 +71,12 @@ onMounted(async () => {
 
     <!-- INSIGHTS -->
     <!-- patterns the system has learned from your data (needs 7+ days of logs) -->
-    <section>
-      <h2>Insights</h2>
+    <section class="card card-blue">
+      <div class="ct">
+        <div class="ct-line"></div>
+        <div class="ct-inner"><span>✦</span><span>Insights</span><span>✦</span></div>
+        <div class="ct-line"></div>
+      </div>
       <div v-if="!capacityStore.insights">Loading...</div>
       <div v-else>
         <p v-for="insight in capacityStore.insights" :key="insight">{{ insight }}</p>

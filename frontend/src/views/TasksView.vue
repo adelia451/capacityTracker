@@ -38,11 +38,14 @@ function complete(task) {
 
 <template>
   <main>
-    <h1>Tasks</h1>
-
     <!-- PLANNED LOAD VS CAPACITY -->
     <!-- shows whether you've planned more than you can handle today -->
-    <section>
+    <section class="card card-blue">
+      <div class="ct">
+        <div class="ct-line"></div>
+        <div class="ct-inner"><span>⋆</span><span>Capacity vs Planned Load</span><span>⋆</span></div>
+        <div class="ct-line"></div>
+      </div>
       <div>
         <span>Capacity</span>
         <!-- display capacityStore.score once you know the field name from the API -->
@@ -65,7 +68,12 @@ function complete(task) {
     </section>
 
     <!-- TASK LIST -->
-    <section>
+    <section class="card card-pink">
+      <div class="ct">
+        <div class="ct-line"></div>
+        <div class="ct-inner"><span>✦</span><span>Today's Tasks</span><span>✦</span></div>
+        <div class="ct-line"></div>
+      </div>
       <p v-if="tasksStore.tasks.length === 0">No tasks for today — syncing from Google Calendar...</p>
 
       <div v-for="task in tasksStore.tasks" :key="task._id">

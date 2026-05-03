@@ -1,48 +1,53 @@
 :root {
-   --black: #000000; 
-   --white: #ffffff;
-   --cream: #fff9f0; /* background */
-   --grey: #696477; /* text */
-   --purple: #d9b9ff;
-   --babyblue: #c0e0ff;
-   --pink: #ffaedc;
+  /* --- PALETTE --- */
+  --cream:  #fff;  /* Spring Heat — page background */
+  --yellow: #e3fc87;
+  --navy:   #253a82;  /* Egyptian Blue — primary text */
+  --peri:   #88a2ff;  /* Truesky Gloxym — muted/secondary text */
+  --pink:   #ffb2f7;  /* Pink Quartz — primary accent */
+  --ice:    #c0e0ff;  /* Calcareous Sinter — subtle surfaces */
+  --blue:   #ab9dff;  /* Blue Titmouse — secondary accent */
 
   /* --- Calendars --- */
-  --admin:  #d9f2ff;    
-  --class:  #ffd9f1;         
-  --homew:  #f8d9ff;    
-  --maint:  #d9ffe4;         
-  --pract:  #fff09c;         
-  --proje:  #f9ffd9;      
-  --socia: #ffebd9;       
+  --admin:  #d9f2ff;
+  --class:  #ffd9f1;
+  --homew:  #f8d9ff;
+  --maint:  #d9ffe4;
+  --pract:  #fff09c;
+  --proje:  #f9ffd9;
+  --socia:  #ffebd9;
 
   /* --- STATUS --- */
-  --good:  #88ffcc;         
-  --warn:  #ffe488;        
-  --bad:  #ff8888;         
+  --good:  #88ffcc;
+  --warn:  #ffe488;
+  --bad:   #ff8888;
 
   /* --- FONTS --- */
-  --hf: 'Comfortaa', sans-serif; /*heading*/
-  --bf: 'Quicksand', sans-serif; /*body*/
-  --mf: 'DM Mono', monospace; 
+  --hf: 'Comfortaa', sans-serif;
+  --bf: 'Quicksand', sans-serif;
+  --mf: 'DM Mono', monospace;
+
+  --ra: 16px;
 }
 
-/* RESET */
+/* ============================================================
+   RESET
+   ============================================================ */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* ---------- BASE ---------- */
-html {
-  scroll-behavior: smooth;
-}
+/* ============================================================
+   BASE
+   ============================================================ */
+html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--bf);
   background: var(--cream);
-  color: var(--purple);
+  color: var(--navy);
   font-size: 14px;
   font-weight: 400;
   min-height: 100vh;
@@ -53,17 +58,12 @@ h1, h2, h3 {
   font-weight: 600;
 }
 
-button, select, input {
-  font-family: var(--mf);
-}
-
-input, select {
-  outline: none;
-}
+button, select, input { font-family: var(--mf); }
+input, select { outline: none; }
 
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-thumb {
-  background: var(--babyblue);
+  background: var(--blue);
   border-radius: 99px;
 }
 
@@ -71,54 +71,197 @@ input, select {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   color: inherit;
 }
-
-/* use this class to make any icon filled */
 .filled {
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-.nav-logo .material-symbols-rounded {
-  font-size: 30px;
-  color: var(--pink);
-}
-
-
-/* ---------- NAV ---------- */
- nav {
+/* ============================================================
+   NAV
+   ============================================================ */
+nav {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--cream);
-  border-bottom: 1px dashed var(--pink);
+  background: color-mix(in srgb, var(--cream) 80%, transparent);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px dashed color-mix(in srgb, var(--pink) 60%, transparent);
   display: flex;
   align-items: center;
   padding: 0 24px;
   gap: 8px;
 }
 
+@keyframes logo-pulse {
+  0%, 100% { filter: drop-shadow(0 0 6px var(--pink)); }
+  50%       { filter: drop-shadow(0 0 14px var(--pink)) drop-shadow(0 0 24px var(--blue)); }
+}
+
+.nav-logo .material-symbols-rounded {
+  font-size: 30px;
+  color: var(--pink);
+  animation: logo-pulse 3s ease-in-out infinite;
+}
+
 nav .nav-link {
   font-family: var(--bf);
   font-size: 14px;
   font-weight: 600;
-  color: var(--grey);
+  color: var(--navy);
   text-decoration: none;
   padding: 14px 12px;
   border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  opacity: 0.5;
   transition: all 0.16s;
 }
 
 nav .nav-link:hover {
-  color: var(--black);
+  opacity: 0.85;
+  transform: translateY(-1px);
 }
 
 nav .nav-link.router-link-active {
+  opacity: 1;
   color: var(--pink);
   border-bottom-color: var(--pink);
-} 
+  text-shadow: 0 0 10px var(--pink);
+}
 
-/* ---------- MAIN ----------- */
+/* ============================================================
+   MAIN
+   ============================================================ */
 main {
   max-width: 960px;
   margin: 0 auto;
   padding: 24px 20px 80px;
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card {
+  position: relative;
+  background: color-mix(in srgb, var(--ice) 40%, var(--cream));
+  border: 1.5px dashed color-mix(in srgb, var(--peri) 60%, transparent);
+  border-radius: var(--ra);
+  padding: 22px 24px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px dotted color-mix(in srgb, var(--peri) 30%, transparent);
+  border-radius: calc(var(--ra) - 4px);
+  pointer-events: none;
+}
+
+/* pink card — primary accent */
+.card-pink {
+  background: color-mix(in srgb, var(--pink) 15%, var(--cream));
+  border-color: color-mix(in srgb, var(--pink) 60%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--pink) 12%, transparent);
+}
+.card-pink::before { border-color: color-mix(in srgb, var(--pink) 25%, transparent); }
+.card-pink .ct     { color: var(--pink); }
+
+/* blue card — secondary accent */
+.card-blue {
+  background: color-mix(in srgb, var(--blue) 8%, var(--cream));
+  border-color: color-mix(in srgb, var(--blue) 50%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--blue) 10%, transparent);
+}
+.card-blue::before { border-color: color-mix(in srgb, var(--blue) 20%, transparent); }
+.card-blue .ct     { color: var(--blue); }
+
+/* ice card — subtle periwinkle */
+.card-ice {
+  background: color-mix(in srgb, var(--ice) 60%, var(--cream));
+  border-color: color-mix(in srgb, var(--peri) 50%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--peri) 10%, transparent);
+}
+.card-ice::before { border-color: color-mix(in srgb, var(--peri) 20%, transparent); }
+.card-ice .ct     { color: var(--peri); }
+
+/* yellow card — mood & stress */
+.card-yellow {
+  background: color-mix(in srgb, var(--yellow) 15%, var(--cream));
+  border-color: color-mix(in srgb, var(--yellow) 60%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--yellow) 12%, transparent);
+}
+.card-yellow::before { border-color: color-mix(in srgb, var(--yellow) 25%, transparent); }
+.card-yellow .ct     { color: color-mix(in srgb, var(--yellow) 70%, var(--navy)); }
+
+/* peri card — intake */
+.card-peri {
+  background: color-mix(in srgb, var(--peri) 12%, var(--cream));
+  border-color: color-mix(in srgb, var(--peri) 55%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--peri) 10%, transparent);
+}
+.card-peri::before { border-color: color-mix(in srgb, var(--peri) 22%, transparent); }
+.card-peri .ct     { color: var(--peri); }
+
+/* ============================================================
+   CARD TITLE (CT)
+   ============================================================ */
+.ct {
+  font-family: var(--hf);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  color: var(--peri); /* default — overridden per card variant above */
+}
+
+.ct-line {
+  flex: 1;
+  height: 1px;
+  border-top: 1px dashed color-mix(in srgb, currentColor 35%, transparent);
+}
+
+.ct-inner {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+.tabs {
+  display: flex;
+  border-bottom: 1.5px dashed color-mix(in srgb, var(--pink) 55%, transparent);
+  margin-bottom: 18px;
+  gap: 2px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-family: var(--bf);
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: -1px;
+  opacity: 0.5;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+
+.tab-btn:hover { opacity: 0.85; }
+
+.tab-btn.active {
+  opacity: 1;
+  color: var(--pink);
+  border-bottom-color: var(--pink);
+  text-shadow: 0 0 8px var(--pink);
 }
