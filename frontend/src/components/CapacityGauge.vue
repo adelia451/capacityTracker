@@ -27,7 +27,7 @@ const filled = (props.score / props.max) * C  // how much of the arc to fill
 
     <!-- track (unfilled arc) -->
     <circle :cx="cx" :cy="cy" :r="r"
-      fill="none" stroke="color-mix(in srgb, var(--peri) 15%, transparent)" stroke-width="8"/>
+      fill="none" stroke="color-mix(in srgb, var(--text-muted) 15%, transparent)" stroke-width="8"/>
 
     <!-- filled arc — starts from the top (offset by 25% of circumference) -->
     <circle :cx="cx" :cy="cy" :r="r"
@@ -35,13 +35,13 @@ const filled = (props.score / props.max) * C  // how much of the arc to fill
       :stroke-dasharray="`${filled} ${C - filled}`"
       :stroke-dashoffset="C * 0.25"
       stroke-linecap="round"
-      style="filter: drop-shadow(0 0 10px var(--pink)); animation: ring-pulse 3s ease-in-out infinite"/>
+      style="filter: drop-shadow(0 0 10px var(--accent-pink)); animation: ring-pulse 3s ease-in-out infinite"/>
 
     <defs>
       <linearGradient id="capGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%"   stop-color="var(--pink)"/>
-        <stop offset="50%"  stop-color="var(--blue)"/>
-        <stop offset="100%" stop-color="var(--peri)"/>
+        <stop offset="0%"   stop-color="var(--accent-pink)"/>
+        <stop offset="50%"  stop-color="var(--purple)"/>
+        <stop offset="100%" stop-color="var(--text-muted)"/>
       </linearGradient>
     </defs>
 
@@ -49,16 +49,16 @@ const filled = (props.score / props.max) * C  // how much of the arc to fill
     <text :x="cx" :y="cy - 5" text-anchor="middle"
       font-size="24" font-weight="800"
       :font-family="'Comfortaa, sans-serif'"
-      fill="var(--navy)">{{ score }}</text>
+      fill="var(--text-primary)">{{ Math.round(score * 10) / 10 }}</text>
 
     <!-- /max label -->
     <text :x="cx" :y="cy + 11" text-anchor="middle"
       font-size="9" font-family="'DM Mono', monospace"
-      fill="var(--peri)">/{{ max }}</text>
+      fill="var(--text-muted)">/{{ max }}</text>
 
     <!-- decorative sparkles -->
-    <text :x="cx - 28" :y="cy - 33" font-size="9" fill="var(--pink)" opacity=".7">✦</text>
-    <text :x="cx + 22" :y="cy + 36" font-size="7" fill="var(--blue)" opacity=".6">✧</text>
-    <text :x="cx + 28" :y="cy - 28" font-size="7" fill="var(--peri)" opacity=".5">˚</text>
+    <text :x="cx - 28" :y="cy - 33" font-size="9" fill="var(--accent-pink)" opacity=".7">✦</text>
+    <text :x="cx + 22" :y="cy + 36" font-size="7" fill="var(--purple)" opacity=".6">✧</text>
+    <text :x="cx + 28" :y="cy - 28" font-size="7" fill="var(--text-muted)" opacity=".5">˚</text>
   </svg>
 </template>

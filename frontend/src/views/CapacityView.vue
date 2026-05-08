@@ -1,12 +1,15 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useCapacityStore } from '../stores/capacity'
+import { useLogsStore } from '../stores/logs'
 import CapacityGauge from '../components/CapacityGauge.vue'
 
 const capacityStore = useCapacityStore()
+const logsStore = useLogsStore()
 const today = new Date().toLocaleDateString('en-CA')
 
 onMounted(async () => {
+  await logsStore.fetchTodayLog(today)
   await capacityStore.fetchCapacity(today)
   await capacityStore.fetchPrediction()
 })
@@ -14,7 +17,6 @@ onMounted(async () => {
 
 <template>
   <main>
-    <!-- TODAY'S CAPACITY + CONTRIBUTING FACTORS — same card, like the goal -->
     <section class="card card-pink">
       <div class="ct">
         <div class="ct-line"></div>
@@ -22,15 +24,35 @@ onMounted(async () => {
         <div class="ct-line"></div>
       </div>
 
-      <!-- gauge + bar -->
-      <div style="display: flex; align-items: center; gap: 22px; margin-bottom: 14px;">
+      <!-- gauge + log status + focus window -->
+      <div style="display: flex; align-items: center; gap: 24px; margin-bottom: 14px;">
         <CapacityGauge v-if="capacityStore.score?.score != null" :score="capacityStore.score.score" />
         <div v-else class="score-null">no log yet</div>
-        <div style="flex: 1;">
-          <div class="bar-track">
-            <div class="bar-fill bar-ok"
-              :style="{ width: capacityStore.score?.score ? Math.min(100, (capacityStore.score.score / 10) * 100) + '%' : '0%' }">
-            </div>
+
+        <div class="cap-sidebar">
+          <!-- mini log status -->
+          <div class="log-status">
+            <span :class="logsStore.todayLog?.sleep?.hours ? 'status-done' : 'status-missing'">
+              {{ logsStore.todayLog?.sleep?.hours ? '✓' : '○' }} sleep
+            </span>
+            <span :class="(logsStore.todayLog?.medication?.takenAt || logsStore.todayLog?.medication?.skipped) ? 'status-done' : 'status-missing'">
+              {{ (logsStore.todayLog?.medication?.takenAt || logsStore.todayLog?.medication?.skipped) ? '✓' : '○' }} medication
+            </span>
+            <span :class="logsStore.todayLog?.moodLogs?.length ? 'status-done' : 'status-missing'">
+              {{ logsStore.todayLog?.moodLogs?.length ? '✓' : '○' }} mood
+            </span>
+            <span :class="logsStore.todayLog?.stressLogs?.length ? 'status-done' : 'status-missing'">
+              {{ logsStore.todayLog?.stressLogs?.length ? '✓' : '○' }} stress
+            </span>
+          </div>
+
+          <!-- focus window -->
+          <div class="focus-window">
+            <span class="focus-label">focus window</span>
+            <span v-if="logsStore.todayLog?.medication?.feltOnset && logsStore.todayLog?.medication?.feltEnd" class="focus-times">
+              {{ logsStore.todayLog.medication.feltOnset }} → {{ logsStore.todayLog.medication.feltEnd }}
+            </span>
+            <span v-else class="focus-times-missing">log medication to see</span>
           </div>
         </div>
       </div>
@@ -48,7 +70,7 @@ onMounted(async () => {
           class="factor-row" :class="factor.positive ? 'factor-pos' : 'factor-neg'">
           <span>{{ factor.label }}</span>
           <span class="factor-impact" :class="factor.positive ? 'positive' : 'negative'">
-            {{ factor.positive ? '+' : '-' }}{{ factor.impact }}
+            {{ factor.positive ? '+' : '-' }}{{ Math.round(factor.impact * 100) / 100 }}
           </span>
         </div>
       </div>
@@ -56,7 +78,7 @@ onMounted(async () => {
       <p v-else>Loading...</p>
     </section>
 
-    <!-- PREDICTIONS — separate card -->
+    <!-- PREDICTIONS -->
     <section class="card card-blue">
       <div class="ct">
         <div class="ct-line"></div>

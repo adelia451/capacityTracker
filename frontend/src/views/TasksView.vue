@@ -76,6 +76,19 @@ function complete(task) {
   tasksStore.updateTask(task._id, { completed: !task.completed })
 }
 
+const classSkipReasons = ['sick', 'workload', 'period pain', 'low mood', 'tiredness']
+
+function toggleClassSkip(task) {
+  tasksStore.updateTask(task._id, { skippedClass: !task.skippedClass })
+}
+
+function toggleClassSkipReason(task, reason) {
+  const current = task.skipClassReasons || []
+  const i = current.indexOf(reason)
+  const next = i > -1 ? current.filter(r => r !== reason) : [...current, reason]
+  tasksStore.updateTask(task._id, { skipClassReasons: next })
+}
+
 const categoryColor = {
   class:       'var(--class)',
   homework:    'var(--homew)',
@@ -99,7 +112,7 @@ const categoryColor = {
 
       <div class="bar-label-row">
         <span>Capacity</span>
-        <span class="bar-value">{{ capacityStore.score?.score ?? '—' }}</span>
+        <span class="bar-value">{{ capacityStore.score?.score != null ? Math.round(capacityStore.score.score * 10) / 10 : '—' }}</span>
       </div>
       <div class="bar-track">
         <div class="bar-fill bar-ok"
@@ -109,13 +122,13 @@ const categoryColor = {
 
       <div class="bar-label-row">
         <span>Planned load</span>
-        <span class="bar-value" :style="{ color: plannedLoad > (capacityStore.score?.score || 99) ? 'var(--bad)' : 'var(--pink)' }">
+        <span class="bar-value" :style="{ color: plannedLoad > (capacityStore.score?.score ?? 0) ? 'var(--bad)' : 'var(--blue)' }">
           {{ plannedLoad }}
         </span>
       </div>
       <div class="bar-track">
         <div class="bar-fill"
-          :class="plannedLoad > (capacityStore.score?.score || 99) ? 'bar-warn' : 'bar-ok'"
+          :class="plannedLoad > (capacityStore.score?.score ?? 0) ? 'bar-bad' : plannedLoad > (capacityStore.score?.score ?? 0) * 0.8 ? 'bar-warn' : 'bar-ok'"
           :style="{ width: Math.min(100, (plannedLoad / 10) * 100) + '%' }">
         </div>
       </div>
@@ -126,7 +139,7 @@ const categoryColor = {
     </section>
 
     <!-- HOURS SUMMARY -->
-    <section class="card card-ice">
+    <section class="card card-pink">
       <div class="ct">
         <div class="ct-line"></div>
         <div class="ct-inner"><span>⋆</span><span>Today's Hours</span><span>⋆</span></div>
@@ -137,7 +150,7 @@ const categoryColor = {
         <span class="hours-val">{{ formatMinutes(totalMinutes) }}</span>
       </div>
       <div v-for="(mins, cat) in minutesByCategory" :key="cat" class="hours-row">
-        <span class="hours-cat" :style="{ color: categoryColor[cat] || 'var(--peri)' }">{{ cat }}</span>
+        <span class="hours-cat" :style="{ color: categoryColor[cat] || 'var(--text-muted)' }">{{ cat }}</span>
         <span class="hours-val">{{ formatMinutes(mins) }}</span>
       </div>
     </section>
@@ -157,13 +170,13 @@ const categoryColor = {
         <div class="task-header" @click="toggleExpand(task._id)">
           <!-- line 1: title + deferred badge -->
           <div class="task-main">
-            <span class="task-dot" :style="{ background: categoryColor[task.category] || 'var(--peri)' }"></span>
+            <span class="task-dot" :style="{ background: categoryColor[task.category] || 'var(--text-muted)' }"></span>
             <span class="task-title" :class="{ completed: task.completed }">{{ task.title }}</span>
             <span v-if="task.timesPostponed > 0" class="task-deferred">deferred {{ task.timesPostponed }}×</span>
           </div>
           <!-- line 2: category + time -->
           <div class="task-meta">
-            <span class="task-category" :style="{ color: categoryColor[task.category] || 'var(--peri)', borderColor: categoryColor[task.category] || 'var(--peri)' }">
+            <span class="task-category" :style="{ color: categoryColor[task.category] || 'var(--text-muted)', borderColor: categoryColor[task.category] || 'var(--text-muted)' }">
               {{ task.category }}
             </span>
             <span v-if="task.startTime" class="task-time">
@@ -187,13 +200,29 @@ const categoryColor = {
             >{{ n }}</button>
           </div>
 
-          <div class="task-actions">
-            <button type="button" class="btn-defer" @click.stop="defer(task)">defer →</button>
-            <button v-if="task.timesPostponed > 0" type="button" class="btn-defer" @click.stop="undoDefer(task)">undo defer</button>
-            <button type="button" class="btn-complete" @click.stop="complete(task)">
-              {{ task.completed ? 'done ✓' : 'complete' }}
-            </button>
-          </div>
+          <template v-if="task.category === 'class'">
+            <div class="task-actions">
+              <button type="button" class="btn-complete" @click.stop="toggleClassSkip(task)">
+                {{ task.skippedClass ? 'skipped ✗' : 'attended ✓' }}
+              </button>
+            </div>
+            <div v-if="task.skippedClass" class="task-actions">
+              <span style="font-size: 11px; color: var(--text-muted); font-family: var(--bf);">why?</span>
+              <button v-for="reason in classSkipReasons" :key="reason" type="button"
+                class="btn-effort"
+                :class="{ selected: task.skipClassReasons?.includes(reason) }"
+                @click.stop="toggleClassSkipReason(task, reason)">{{ reason }}</button>
+            </div>
+          </template>
+          <template v-else>
+            <div class="task-actions">
+              <button type="button" class="btn-defer" @click.stop="defer(task)">defer →</button>
+              <button v-if="task.timesPostponed > 0" type="button" class="btn-defer" @click.stop="undoDefer(task)">undo defer</button>
+              <button type="button" class="btn-complete" @click.stop="complete(task)">
+                {{ task.completed ? 'done ✓' : 'complete' }}
+              </button>
+            </div>
+          </template>
         </div>
 
       </div>

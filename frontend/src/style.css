@@ -1,21 +1,40 @@
 :root {
   /* --- PALETTE --- */
-  --cream:  #fffff6;  /* page background */
-  --yellow: #e8e2d4;
-  --navy:   #41478b;  /* primary text */
-  --peri:   #88a2ff;  /* muted/secondary text */
-  --pink:   #b57dda;  /* primary accent */
-  --ice:    #c0e0ff;  /* subtle surfaces */
-  --blue:   #ab9dff;  /* secondary accent */
+  --bg:        #f7faff;   /* page background */
+  --bg-soft: #eef4ff;      /* cards / sections — unused */
+  --bg-elevated: #ffffff;  /* modals / pop */
+
+  --ink: #121a3a;          /* unused */
+  --text-primary: #1f2a44;
+  --text-secondary: #4b5a7a;
+  --text-muted: #7d8bb0;
+  
+  --light-cyan: #c0e0ff;
+  --blue: #88a2ff;
+  --mid-blue: #5f7dff;     /* unused */
+  --dark-blue: #253a82;
+
+  --light-pink: #ffd9fb;
+  --pink: #ffc1f9;
+  --dark-pink: #ffb2f7;
+  --accent-pink: #ff8ae8;
+
+  --light-purple: #ddd6ff;
+  --purple: #ab9dff;
+  --dark-purple: #7f6bff;
+
+  --light-yellow: #f5ffbd;
+  --yellow: #e3fc87;
+  --dark-yellow: #d4e96a;
 
   /* --- CALENDARS --- */
   --admin:  #a7e0ff;
   --class:  #ffa5de;
-  --homew:  #f8d9ff;
-  --maint:  #d9ffe4;
+  --homew:  #f1b0ff;
+  --maint:  #a9ffc1;
   --pract:  #fff09c;
-  --proje:  #f9ffd9;
-  --socia:  #ffebd9;
+  --proje:  #f3ffac;
+  --socia:  #ffd6b1;
 
   /* --- STATUS --- */
   --good:  #88ffcc;
@@ -42,8 +61,8 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--bf);
-  background: var(--cream);
-  color: var(--navy);
+  background: var(--bg);
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 400;
   min-height: 100vh;
@@ -76,9 +95,9 @@ nav {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: color-mix(in srgb, var(--cream) 80%, transparent);
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
   backdrop-filter: blur(16px);
-  border-bottom: 1px dashed color-mix(in srgb, var(--pink) 60%, transparent);
+  border-bottom: 1px dashed color-mix(in srgb, var(--dark-pink) 60%, transparent);
   display: flex;
   align-items: center;
   padding: 0 24px;
@@ -86,21 +105,21 @@ nav {
 }
 
 @keyframes logo-pulse {
-  0%, 100% { filter: drop-shadow(0 0 6px var(--pink)); }
-  50%       { filter: drop-shadow(0 0 14px var(--pink)) drop-shadow(0 0 24px var(--blue)); }
+  0%, 100% { filter: drop-shadow(0 0 6px var(--dark-pink)); }
+  50%       { filter: drop-shadow(0 0 24px var(--light-pink)) drop-shadow(0 0 24px var(--pink)); }
 }
 
 .nav-logo .material-symbols-rounded {
   font-size: 30px;
-  color: var(--pink);
+  color: var(--dark-pink);
   animation: logo-pulse 3s ease-in-out infinite;
 }
 
 nav .nav-link {
-  font-family: var(--bf);
-  font-size: 12px;
+  font-family: var(--hf);
+  font-size: 14px;
   font-weight: 600;
-  color: var(--navy);
+  color: var(--text-primary);
   text-decoration: none;
   padding: 14px 12px;
   border-bottom: 2px solid transparent;
@@ -118,7 +137,7 @@ nav .nav-link.router-link-active {
   opacity: 1;
   color: var(--pink);
   border-bottom-color: var(--pink);
-  text-shadow: 0 0 10px var(--pink);
+  text-shadow: 0 0 10px var(--dark-pink);
 }
 
 
@@ -130,11 +149,10 @@ main {
 }
 
 
-/* ========== RESET ========== */
+/* ========== CARDS ========== */
 .card {
   position: relative;
-  background: color-mix(in srgb, var(--ice) 40%, var(--cream));
-  border: 1.5px dashed color-mix(in srgb, var(--peri) 60%, transparent);
+  border: 1.5px dashed transparent;
   border-radius: var(--ra);
   padding: 22px 24px;
   margin-bottom: 16px;
@@ -145,55 +163,46 @@ main {
   content: '';
   position: absolute;
   inset: 5px;
-  border: 1px dotted color-mix(in srgb, var(--peri) 30%, transparent);
+  border: 1px dotted transparent;
   border-radius: calc(var(--ra) - 4px);
   pointer-events: none;
 }
 
-/* pink card — primary accent */
+/* PINK */
 .card-pink {
-  background: color-mix(in srgb, var(--pink) 15%, var(--cream));
-  border-color: color-mix(in srgb, var(--pink) 60%, transparent);
-  box-shadow: 0 0 24px color-mix(in srgb, var(--pink) 12%, transparent);
+  background: color-mix(in srgb, var(--light-pink) 20%, var(--bg));
+  border-color: color-mix(in srgb, var(--dark-pink) 60%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--light-purple) 70%, transparent);
 }
-.card-pink::before { border-color: color-mix(in srgb, var(--pink) 25%, transparent); }
-.card-pink .ct     { color: var(--pink); }
+.card-pink::before { border-color: color-mix(in srgb, var(--dark-purple) 70%, transparent); }
+.card-pink .ct     { color: var(--text-secondary); }
 
-/* blue card — secondary accent */
+/* BLUE */
 .card-blue {
-  background: color-mix(in srgb, var(--blue) 8%, var(--cream));
-  border-color: color-mix(in srgb, var(--blue) 50%, transparent);
-  box-shadow: 0 0 24px color-mix(in srgb, var(--blue) 10%, transparent);
+  background: color-mix(in srgb, var(--light-cyan) 20%, var(--bg));
+  border-color: color-mix(in srgb, var(--dark-blue) 60%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--light-pink) 70%, transparent);
 }
-.card-blue::before { border-color: color-mix(in srgb, var(--blue) 20%, transparent); }
-.card-blue .ct     { color: var(--blue); }
+.card-blue::before { border-color: color-mix(in srgb, var(--dark-pink) 80%, transparent); }
+.card-blue .ct     { color: var(--text-secondary); }
 
-/* ice card — subtle periwinkle */
-.card-ice {
-  background: color-mix(in srgb, var(--ice) 60%, var(--cream));
-  border-color: color-mix(in srgb, var(--peri) 50%, transparent);
-  box-shadow: 0 0 24px color-mix(in srgb, var(--peri) 10%, transparent);
+/* PURPLE */
+.card-purple {
+  background: color-mix(in srgb, var(--light-purple) 30%, var(--bg));
+  border-color: color-mix(in srgb, var(--dark-purple) 60%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--light-yellow) 30%, transparent);
 }
-.card-ice::before { border-color: color-mix(in srgb, var(--peri) 20%, transparent); }
-.card-ice .ct     { color: var(--peri); }
+.card-purple::before { border-color: color-mix(in srgb, var(--dark-yellow) 70%, transparent); } 
+.card-purple .ct     { color: var(--text-secondary); } 
 
-/* yellow card — mood & stress */
+/* YELLOW */
 .card-yellow {
-  background: color-mix(in srgb, var(--yellow) 15%, var(--cream));
-  border-color: color-mix(in srgb, var(--yellow) 60%, transparent);
-  box-shadow: 0 0 24px color-mix(in srgb, var(--yellow) 12%, transparent);
+  background: color-mix(in srgb, var(--light-yellow) 20%, var(--bg));
+  border-color: color-mix(in srgb, var(--dark-yellow) 60%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--light-cyan) 30%, transparent);
 }
-.card-yellow::before { border-color: color-mix(in srgb, var(--yellow) 25%, transparent); }
-.card-yellow .ct     { color: color-mix(in srgb, var(--yellow) 70%, var(--navy)); }
-
-/* peri card — intake */
-.card-peri {
-  background: color-mix(in srgb, var(--peri) 12%, var(--cream));
-  border-color: color-mix(in srgb, var(--peri) 55%, transparent);
-  box-shadow: 0 0 24px color-mix(in srgb, var(--peri) 10%, transparent);
-}
-.card-peri::before { border-color: color-mix(in srgb, var(--peri) 22%, transparent); }
-.card-peri .ct     { color: var(--peri); }
+.card-yellow::before { border-color: color-mix(in srgb, var(--blue) 70%, transparent); }
+.card-yellow .ct      { color: var(--text-secondary); }
 
 
 /* ========== CARD TITLE ========== */
@@ -208,13 +217,12 @@ main {
   gap: 7px;
   white-space: nowrap;
   overflow: hidden;
-  color: var(--peri); /* default — overridden per card variant above */
 }
 
 .ct-line {
   flex: 1;
   height: 1px;
-  border-top: 1px dashed color-mix(in srgb, currentColor 35%, transparent);
+  border-top: 1px dashed color-mix(in srgb, currentColor 50%, transparent);
 }
 
 .ct-inner {
@@ -226,7 +234,7 @@ main {
 /* ========== TABS ========== */
 .tabs {
   display: flex;
-  border-bottom: 1.5px dashed color-mix(in srgb, var(--pink) 55%, transparent);
+  border-bottom: 1.5px dashed color-mix(in srgb, var(--accent-pink) 55%, transparent);
   margin-bottom: 18px;
   gap: 2px;
 }
@@ -239,27 +247,28 @@ main {
   font-size: 13px;
   font-family: var(--bf);
   font-weight: 600;
-  color: var(--navy);
+  color: var(--text-primary);
   margin-bottom: -1px;
   opacity: 0.5;
   transition: all 0.15s;
   cursor: pointer;
+  text-transform: capitalize;
 }
 
 .tab-btn:hover { opacity: 0.85; }
 
 .tab-btn.active {
   opacity: 1;
-  color: var(--pink);
-  border-bottom-color: var(--pink);
-  text-shadow: 0 0 8px var(--pink);
+  color: var(--accent-pink);
+  border-bottom-color: var(--accent-pink);
+  text-shadow: 0 0 8px var(--accent-pink);
 }
 
 
 /* ========== LABELS ========== */
 label {
   font-size: 11px;
-  color: var(--peri);
+  color: var(--text-muted);
   font-weight: 700;
   margin-bottom: 5px;
   display: block;
@@ -273,11 +282,11 @@ input[type="number"],
 input[type="text"],
 select {
   width: 100%;
-  background: var(--cream);
-  border: 1.5px solid color-mix(in srgb, var(--peri) 30%, transparent);
+  background: var(--bg-elevated);
+  border: 1.5px solid color-mix(in srgb, var(--text-muted) 30%, transparent);
   border-radius: 10px;
   padding: 10px 14px;
-  color: var(--navy);
+  color: var(--text-primary);
   font-size: 13px;
   font-family: var(--bf);
   transition: border-color 0.2s;
@@ -287,9 +296,9 @@ select {
 
 input:focus,
 select:focus {
-  border-color: var(--pink);
+  border-color: var(--yellow);
   border-style: solid;
-  box-shadow: 0 0 14px color-mix(in srgb, var(--pink) 25%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--dark-yellow) 30%, transparent);
 }
 
 /* ========== WORD BUTTONS ========== */
@@ -299,9 +308,8 @@ select:focus {
   border-radius: 99px;
   padding: 6px 14px;
   font-size: 12px;
-  font-family: var(--bf);
-  font-weight: 600;
-  color: var(--peri);
+  font-family: var(--mf);
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.15s;
   margin: 3px;
@@ -313,10 +321,10 @@ select:focus {
 }
 
 .card button[type="button"].selected {
-  background: var(--pink);
-  border-color: var(--pink);
+  background: var(--purple);
+  border-color: var(--purple);
   border-style: solid;
-  color: var(--cream);
+  color: var(--bg-elevated);
 }
 
 /* ========== BUTTONS ========== */
@@ -324,10 +332,10 @@ select:focus {
   width: 100%;
   padding: 12px;
   margin-top: 16px;
-  background: linear-gradient(135deg, var(--pink), var(--blue));
+  background: linear-gradient(135deg, var(--light-yellow), var(--light-cyan), var(--light-purple));
   border: none;
   border-radius: 99px;
-  color: var(--cream);
+  color: var(--bg-elevated);
   font-family: var(--bf);
   font-size: 13px;
   font-weight: 700;
@@ -339,55 +347,54 @@ select:focus {
 .btn-save:hover {
   opacity: 0.9;
   transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 0 32px color-mix(in srgb, var(--pink) 60%, transparent), 0 6px 20px rgba(0,0,0,.15);
+  box-shadow: 0 0 32px color-mix(in srgb, var(--light-cyan) 60%, transparent);
 }
 
 /* ========== EFFORT BUTTONS ========== */
-.btn-effort {
+.card button.btn-effort {
   background: none;
-  border: 1.5px dashed color-mix(in srgb, var(--peri) 50%, transparent);
+  border: 1.5px dashed color-mix(in srgb, var(--text-muted) 50%, transparent);
   border-radius: 8px;
   padding: 4px 10px;
   font-size: 12px;
   font-family: var(--mf);
-  color: var(--peri);
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.15s;
 }
 
-.btn-effort.selected {
-  background: var(--blue);
-  border-color: var(--blue);
+.card button.btn-effort.selected {
+  background: var(--pink);
+  border-color: var(--pink);
   border-style: solid;
-  color: var(--cream);
+  color: var(--bg-elevated);
 }
 
 /* ========== ACTION BUTTONS ========== */
-.btn-defer,
-.btn-complete {
+.card button.btn-defer,
+.card button.btn-complete {
   border: 1.5px solid transparent;
   border-radius: 99px;
   padding: 5px 14px;
   font-size: 11px;
-  font-family: var(--bf);
-  font-weight: 700;
+  font-family: var(--mf);
   cursor: pointer;
   transition: all 0.15s;
 }
 
-.btn-defer {
-  background: none;
-  border-color: color-mix(in srgb, var(--peri) 40%, transparent);
-  color: var(--peri);
+.card button.btn-defer {
+  background: var(--bad);
+  /* border-color: color-mix(in srgb, var(--bad) 80%, transparent); */
+  color: var(--bg-elevated);
 }
 
-.btn-complete {
-  background: none;
-  border-color: color-mix(in srgb, var(--good) 60%, transparent);
-  color: var(--good);
+.card button.btn-complete {
+  background: var(--good);
+  /* border-color: color-mix(in srgb, var(--good) 80%, transparent); */
+  color: var(--bg-elevated);
 }
 
-.btn-complete:disabled {
+.card button.btn-complete:disabled {
   opacity: 0.4;
   cursor: default;
 }
@@ -395,7 +402,7 @@ select:focus {
 /* ========== TASK ROWS ========== */
 .task-item {
   padding: 12px 0;
-  border-bottom: 1px dashed color-mix(in srgb, var(--peri) 20%, transparent);
+  border-bottom: 1px dashed color-mix(in srgb, var(--text-muted) 20%, transparent);
 }
 
 .task-item:last-child { border-bottom: none; }
@@ -421,7 +428,6 @@ select:focus {
   padding-left: 16px;
 }
 
-/* colored dot showing the GCal calendar category */
 .task-dot {
   width: 8px;
   height: 8px;
@@ -466,7 +472,7 @@ select:focus {
 .task-time {
   font-size: 11px;
   font-family: var(--mf);
-  color: var(--peri);
+  color: var(--text-muted);
   margin-left: auto;
 }
 
@@ -476,7 +482,7 @@ select:focus {
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px dashed color-mix(in srgb, var(--pink) 20%, transparent);
+  border-bottom: 1px dashed color-mix(in srgb, var(--accent-pink) 20%, transparent);
   font-size: 13px;
 }
 
@@ -484,27 +490,26 @@ select:focus {
 
 .summary-label {
   font-weight: 700;
-  color: var(--peri);
+  color: var(--text-muted);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .summary-value {
-  font-weight: 600;
-  color: var(--navy);
+  color: var(--text-primary);
   font-family: var(--mf);
   font-size: 12px;
 }
 
-.summary-value.muted { color: var(--peri); opacity: 0.5; }
+.summary-value.muted { color: var(--text-muted); opacity: 0.5; }
 
 .insight-row {
   font-size: 13px;
   font-weight: 500;
   padding: 8px 0;
-  border-bottom: 1px dashed color-mix(in srgb, var(--blue) 20%, transparent);
-  color: var(--navy);
+  border-bottom: 1px dashed color-mix(in srgb, var(--purple) 20%, transparent);
+  color: var(--text-primary);
 }
 
 .insight-row:last-child { border-bottom: none; }
@@ -514,7 +519,6 @@ select:focus {
   margin-bottom: 16px;
 }
 
-/* spacing between label and button groups */
 label + div {
   margin-top: 8px;
   display: flex;
@@ -522,13 +526,11 @@ label + div {
   gap: 6px;
 }
 
-/* spacing between form sections */
 form > div + label,
 form > label + label {
   margin-top: 16px;
 }
 
-/* skipped checkbox label — different from field labels */
 input[type="checkbox"] {
   width: auto;
   margin-right: 8px;
@@ -542,7 +544,7 @@ label:has(input[type="checkbox"]) {
   font-size: 13px;
   text-transform: none;
   letter-spacing: 0;
-  color: var(--navy);
+  color: var(--text-primary);
   margin-bottom: 16px;
   cursor: pointer;
 }
@@ -571,8 +573,8 @@ label:has(input[type="checkbox"]) {
 
 /* ========== GAUGE ANIMATIONS ========== */
 @keyframes ring-pulse {
-  0%, 100% { filter: drop-shadow(0 0 8px var(--pink)); }
-  50%       { filter: drop-shadow(0 0 18px var(--pink)) drop-shadow(0 0 30px var(--blue)); }
+  0%, 100% { filter: drop-shadow(0 0 8px var(--accent-pink)); }
+  50%       { filter: drop-shadow(0 0 18px var(--accent-pink)) drop-shadow(0 0 30px var(--purple)); }
 }
 
 @keyframes gauge-float {
@@ -586,23 +588,23 @@ label:has(input[type="checkbox"]) {
   font-size: 64px;
   font-weight: 700;
   line-height: 1;
-  background: linear-gradient(135deg, var(--pink), var(--blue));
+  background: linear-gradient(135deg, var(--accent-pink), var(--purple));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 20px var(--pink));
+  filter: drop-shadow(0 0 20px var(--accent-pink));
   margin: 8px 0 16px;
 }
 
 .score-null {
   font-family: var(--hf);
   font-size: 32px;
-  color: var(--peri);
+  color: var(--text-muted);
   opacity: 0.4;
   margin: 8px 0 16px;
 }
 
-/* ========== CAPACITY BARS ========== */
+/* ========== CAPACITY VS LOAD BARS ========== */
 .bar-label-row {
   display: flex;
   justify-content: space-between;
@@ -611,19 +613,19 @@ label:has(input[type="checkbox"]) {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--peri);
+  color: var(--text-muted);
   margin-bottom: 6px;
 }
 
 .bar-value {
   font-family: var(--mf);
   font-size: 13px;
-  color: var(--pink);
+  color: var(--blue);
 }
 
 .bar-track {
   height: 8px;
-  background: color-mix(in srgb, var(--peri) 15%, transparent);
+  background: color-mix(in srgb, var(--text-muted) 15%, transparent);
   border-radius: 99px;
   overflow: hidden;
   margin-bottom: 14px;
@@ -636,18 +638,18 @@ label:has(input[type="checkbox"]) {
   box-shadow: 0 0 12px currentColor;
 }
 
-.bar-warn { background: var(--bad); }
-.bar-ok   { background: var(--pink); }
+.bar-ok   { background: var(--good); }
+.bar-warn { background: var(--warn); }
+.bar-bad  { background: var(--bad); }
 
 /* ========== HOURS SUMMARY ========== */
 .hours-total {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  font-weight: 700;
   margin-bottom: 12px;
   padding-bottom: 10px;
-  border-bottom: 1px dashed color-mix(in srgb, var(--peri) 20%, transparent);
+  border-bottom: 1px dashed color-mix(in srgb, var(--text-muted) 20%, transparent);
 }
 
 .hours-row {
@@ -668,7 +670,66 @@ label:has(input[type="checkbox"]) {
 .hours-val {
   font-family: var(--mf);
   font-size: 12px;
-  color: var(--peri);
+  color: var(--text-muted);
+}
+
+/* ========== CAPACITY SIDEBAR ========== */
+.cap-sidebar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.log-status {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.status-done {
+  font-size: 12px;
+  font-family: var(--mf);
+  color: var(--good);
+  font-weight: 600;
+}
+
+.status-missing {
+  font-size: 12px;
+  font-family: var(--mf);
+  color: var(--text-muted);
+  opacity: 0.55;
+}
+
+.focus-window {
+  border-top: 1px dashed color-mix(in srgb, var(--text-muted) 25%, transparent);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.focus-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.focus-times {
+  font-family: var(--mf);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--purple);
+}
+
+.focus-times-missing {
+  font-family: var(--mf);
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.5;
+  font-style: italic;
 }
 
 /* ========== FACTOR ROWS ========== */
@@ -679,7 +740,7 @@ label:has(input[type="checkbox"]) {
   padding: 10px 14px;
   border-radius: 10px;
   margin-bottom: 6px;
-  background: color-mix(in srgb, var(--cream) 60%, transparent);
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
   font-size: 13px;
   font-weight: 600;
 }
@@ -687,11 +748,12 @@ label:has(input[type="checkbox"]) {
 .factor-impact {
   font-family: var(--mf);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .factor-impact.positive { color: var(--good); }
 .factor-impact.negative { color: var(--bad); }
+.factor-impact.neutral  { color: var(--warn); }
 
 .factor-pos {
   background: color-mix(in srgb, var(--good) 10%, transparent);
@@ -700,6 +762,10 @@ label:has(input[type="checkbox"]) {
 .factor-neg {
   background: color-mix(in srgb, var(--bad) 10%, transparent);
   box-shadow: inset 0 0 14px color-mix(in srgb, var(--bad) 8%, transparent);
+}
+.factor-neutral {
+  background: color-mix(in srgb, var(--warn) 10%, transparent);
+  box-shadow: inset 0 0 14px color-mix(in srgb, var(--warn) 8%, transparent);
 }
 
 /* ========== PREDICTION ROWS ========== */
@@ -710,13 +776,13 @@ label:has(input[type="checkbox"]) {
   padding: 10px 14px;
   border-radius: 10px;
   margin-bottom: 6px;
-  background: color-mix(in srgb, var(--cream) 60%, transparent);
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
   font-size: 13px;
 }
 
 .prediction-label { font-weight: 600; }
-.prediction-score { font-family: var(--mf); font-weight: 700; color: var(--blue); }
-.prediction-confidence { font-size: 11px; color: var(--peri); }
+.prediction-score { font-family: var(--mf); font-weight: 700; color: var(--purple); }
+.prediction-confidence { font-size: 11px; color: var(--text-muted); }
 
 /* ========== LOG ENTRIES LIST ========== */
 .entry-row {
@@ -724,7 +790,7 @@ label:has(input[type="checkbox"]) {
   align-items: center;
   gap: 10px;
   padding: 8px 0;
-  border-bottom: 1px dashed color-mix(in srgb, var(--peri) 15%, transparent);
+  border-bottom: 1px dashed color-mix(in srgb, var(--text-muted) 15%, transparent);
   font-size: 12px;
 }
 
@@ -732,44 +798,50 @@ label:has(input[type="checkbox"]) {
 
 .entry-time {
   font-family: var(--mf);
-  color: var(--peri);
+  color: var(--text-muted);
   font-size: 11px;
   flex-shrink: 0;
 }
 
 .entry-value {
   font-weight: 700;
-  color: var(--navy);
+  color: var(--text-secondary);
   flex: 1;
 }
 
 .entry-reason {
   font-size: 11px;
-  color: var(--peri);
+  color: var(--text-muted);
   font-style: italic;
 }
 
 /* ========== MOOD / STRESS / SLEEP BUTTON COLORS ========== */
-/* each value gets its own color when selected — matches goal.css exactly */
-.card button[data-mood="depressed"].selected,
-.card button[data-mood="heavy"].selected   { background: #7070b8; border-color: #7070b8; box-shadow: 0 0 14px #7070b8; color: #fff; }
-.card button[data-mood="sad"].selected     { background: #6898d0; border-color: #6898d0; box-shadow: 0 0 14px #6898d0; color: #fff; }
-.card button[data-mood="meh"].selected     { background: #a090c0; border-color: #a090c0; box-shadow: 0 0 14px #a090c0; color: #fff; }
-.card button[data-mood="neutral"].selected { background: #8098b8; border-color: #8098b8; box-shadow: 0 0 14px #8098b8; color: #fff; }
-.card button[data-mood="positive"].selected{ background: #68b890; border-color: #68b890; box-shadow: 0 0 14px #68b890; color: #fff; }
-.card button[data-mood="happy"].selected   { background: #d888b8; border-color: #d888b8; box-shadow: 0 0 14px #d888b8; color: #fff; }
+.card button[data-mood="depressed"].selected { background: var(--dark-blue);   border-color: var(--dark-blue);   box-shadow: 0 0 14px var(--dark-blue);   color: #fff; }
+.card button[data-mood="heavy"].selected     { background: var(--mid-blue);    border-color: var(--mid-blue);    box-shadow: 0 0 14px var(--mid-blue);    color: #fff; }
+.card button[data-mood="sad"].selected       { background: var(--dark-purple); border-color: var(--dark-purple); box-shadow: 0 0 14px var(--dark-purple); color: #fff; }
+.card button[data-mood="meh"].selected       { background: var(--purple);      border-color: var(--purple);      box-shadow: 0 0 14px var(--purple);      color: #fff; }
+.card button[data-mood="neutral"].selected   { background: var(--accent-pink); border-color: var(--accent-pink); box-shadow: 0 0 14px var(--accent-pink); color: #fff; }
+.card button[data-mood="positive"].selected  { background: var(--pink);        border-color: var(--pink);        box-shadow: 0 0 14px var(--pink);        color: var(--text-primary); }
+.card button[data-mood="happy"].selected     { background: var(--yellow);      border-color: var(--yellow);      box-shadow: 0 0 14px var(--yellow);      color: var(--text-primary); }
 
-.card button[data-stress="understimulated"].selected { background: #7898c8; border-color: #7898c8; box-shadow: 0 0 14px #7898c8; color: #fff; }
-.card button[data-stress="stress-free"].selected     { background: #58b890; border-color: #58b890; box-shadow: 0 0 14px #58b890; color: #fff; }
-.card button[data-stress="balanced"].selected        { background: #9880c8; border-color: #9880c8; box-shadow: 0 0 14px #9880c8; color: #fff; }
-.card button[data-stress="debilitating"].selected    { background: #d89060; border-color: #d89060; box-shadow: 0 0 14px #d89060; color: #fff; }
-.card button[data-stress="paralyzing"].selected      { background: #c86070; border-color: #c86070; box-shadow: 0 0 14px #c86070; color: #fff; }
+.card button[data-stress="understimulated"].selected  { background: var(--dark-purple); border-color: var(--dark-purple); box-shadow: 0 0 14px var(--dark-purple); color: #fff; }
+.card button[data-stress="stress-free"].selected      { background: var(--purple);      border-color: var(--purple);      box-shadow: 0 0 14px var(--purple);      color: #fff; }
+.card button[data-stress="balanced"].selected         { background: var(--dark-pink);      border-color: var(--dark-pink);      box-shadow: 0 0 14px var(--dark-pink);      color: #fff; }
+.card button[data-stress="debilitating"].selected     { background: var(--mid-blue);    border-color: var(--mid-blue);    box-shadow: 0 0 14px var(--mid-blue);    color: #fff; }
+.card button[data-stress="paralyzing"].selected       { background: var(--dark-blue);  border-color: var(--dark-blue);  box-shadow: 0 0 14px var(--dark-blue);  color: #fff; }
 
-.card button[data-sleep="sleepy"].selected   { background: #7080b0; border-color: #7080b0; box-shadow: 0 0 14px #7080b0; color: #fff; }
-.card button[data-sleep="tired"].selected    { background: #9090c0; border-color: #9090c0; box-shadow: 0 0 14px #9090c0; color: #fff; }
-.card button[data-sleep="neutral"].selected  { background: #7098b0; border-color: #7098b0; box-shadow: 0 0 14px #7098b0; color: #fff; }
-.card button[data-sleep="awake"].selected    { background: #58a898; border-color: #58a898; box-shadow: 0 0 14px #58a898; color: #fff; }
-.card button[data-sleep="energized"].selected{ background: #b8c050; border-color: #b8c050; box-shadow: 0 0 14px #b8c050; color: #3a3808; }
+.card button[data-sleep="sleepy"].selected   { background: var(--dark-purple);   border-color: var(--dark-purple);   box-shadow: 0 0 14px var(--dark-purple);   color: #fff; }
+.card button[data-sleep="tired"].selected    { background: var(--purple);      border-color: var(--purple);      box-shadow: 0 0 14px var(--purple);      color: #fff; }
+.card button[data-sleep="neutral"].selected  { background: var(--pink); border-color: var(--pink); box-shadow: 0 0 14px var(--pink); color: #fff; }
+.card button[data-sleep="awake"].selected    { background: var(--accent-pink); border-color: var(--accent-pink); box-shadow: 0 0 14px var(--accent-pink); color: #fff; }
+.card button[data-sleep="energized"].selected{ background: var(--yellow);      border-color: var(--yellow);      box-shadow: 0 0 14px var(--yellow);      color: var(--text-primary); }
+
+
+/* ========== REASON BUTTON COLORS ========== */
+.card button[data-reason-group="internal"].selected { background: var(--light-pink);    border-color: var(--light-pink);    box-shadow: 0 0 14px var(--light-pink);    color: var(--text-primary); }
+.card button[data-reason-group="physical"].selected { background: var(--light-yellow);    border-color: var(--light-yellow);      box-shadow: 0 0 14px var(--light-yellow);      color: var(--text-primary); }
+.card button[data-reason-group="external"].selected { background: var(--light-cyan);      border-color: var(--light-cyan);      box-shadow: 0 0 14px var(--light-cyan);      color: var(--text-primary); }
+.card button[data-reason-group="neutral"].selected  { background: var(--light-purple);    border-color: var(--light-purple);    box-shadow: 0 0 14px var(--light-purple);    color:var(--text-primary); }
 
 /* ========== INSIGHT CARDS ========== */
 .insight-card {
@@ -783,16 +855,16 @@ label:has(input[type="checkbox"]) {
 }
 
 .insight-blue {
-  border-color: color-mix(in srgb, var(--blue) 45%, transparent);
-  background: color-mix(in srgb, var(--blue) 8%, transparent);
+  border-color: color-mix(in srgb, var(--purple) 45%, transparent);
+  background: color-mix(in srgb, var(--purple) 8%, transparent);
 }
 .insight-pink {
-  border-color: color-mix(in srgb, var(--pink) 45%, transparent);
-  background: color-mix(in srgb, var(--pink) 8%, transparent);
+  border-color: color-mix(in srgb, var(--accent-pink) 45%, transparent);
+  background: color-mix(in srgb, var(--accent-pink) 8%, transparent);
 }
 .insight-peri {
-  border-color: color-mix(in srgb, var(--peri) 45%, transparent);
-  background: color-mix(in srgb, var(--peri) 8%, transparent);
+  border-color: color-mix(in srgb, var(--text-muted) 45%, transparent);
+  background: color-mix(in srgb, var(--text-muted) 8%, transparent);
 }
 
 /* ========== FEEDBACK MESSAGE ========== */
@@ -800,9 +872,9 @@ label:has(input[type="checkbox"]) {
   margin-top: 12px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--pink);
+  color: var(--accent-pink);
   text-align: center;
-  text-shadow: 0 0 10px var(--pink);
+  text-shadow: 0 0 10px var(--accent-pink);
   letter-spacing: 0.04em;
 }
 
@@ -812,7 +884,7 @@ label:has(input[type="checkbox"]) {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  border: 2px solid var(--pink);
+  border: 2px solid var(--accent-pink);
   pointer-events: none;
   transform: translate(-50%, -50%);
   z-index: 9999;

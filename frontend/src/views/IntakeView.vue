@@ -15,7 +15,6 @@ const takenAt = ref('')
 const feltOnset = ref('')
 const feltPeak = ref('')
 const feltEnd = ref('')
-const focusCapacityHours = ref('')
 
 const medQuality = ref([])
 const medQualityOptions = ['no effect', 'lightly felt', 'felt', 'strongly felt']
@@ -70,7 +69,6 @@ onMounted(async () => {
     feltOnset.value           = med.feltOnset || ''
     feltPeak.value            = med.feltPeak || ''
     feltEnd.value             = med.feltEnd || ''
-    focusCapacityHours.value  = med.focusCapacityHours || ''
     medQuality.value          = med.medQuality || []
     focusQuality.value        = med.focusQuality || []
     skipped.value             = med.skipped || false
@@ -81,13 +79,22 @@ onMounted(async () => {
 
 onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 
+// calculate focus capacity hours automatically from onset → end
+function calcFocusHours() {
+  if (!feltOnset.value || !feltEnd.value) return null
+  const [oh, om] = feltOnset.value.split(':').map(Number)
+  const [eh, em] = feltEnd.value.split(':').map(Number)
+  if (isNaN(oh) || isNaN(eh)) return null
+  return Math.round(((eh * 60 + em) - (oh * 60 + om)) / 60 * 10) / 10
+}
+
 async function saveMed() {
   await logsStore.saveMedication(today, {
     takenAt: takenAt.value,
     feltOnset: feltOnset.value,
     feltPeak: feltPeak.value,
     feltEnd: feltEnd.value,
-    focusCapacityHours: focusCapacityHours.value ? Number(focusCapacityHours.value) : null,
+    focusCapacityHours: calcFocusHours(),
     medQuality: medQuality.value,
     focusQuality: focusQuality.value,
     skipped: skipped.value,
@@ -110,7 +117,7 @@ async function saveMed() {
     </div>
 
     <!-- MEDICATION -->
-    <section v-if="activeTab === 'medication'" class="card card-peri">
+    <section v-if="activeTab === 'medication'" class="card card-yellow">
       <div class="ct">
         <div class="ct-line"></div>
         <div class="ct-inner"><span>˚</span><span>Medication</span><span>˚</span></div>
@@ -120,11 +127,11 @@ async function saveMed() {
       <form @submit.prevent="saveMed">
         <label>
           <input type="checkbox" v-model="skipped" />
-          Skipped today
+          Skipped medication
         </label>
 
-        <div v-if="skipped">
-          <label>Skip reasons</label>
+        <div v-if="skipped" style="display: contents">
+          <label>Why?</label>
           <div>
             <button v-for="reason in skipReasonOptions" :key="reason" type="button"
               :class="{ selected: selectedSkipReasons.includes(reason) }"
@@ -132,7 +139,7 @@ async function saveMed() {
           </div>
         </div>
 
-        <div v-else>
+        <div v-else style="display: contents">
           <label>Taken at</label>
           <input type="text" v-model="takenAt" placeholder="HH:MM" />
 
@@ -152,15 +159,12 @@ async function saveMed() {
               @click="toggleMedQuality(option)">{{ option }}</button>
           </div>
 
-          <label>Focus quality</label>
+          <label style="margin-top: 14px;">Focus quality</label>
           <div>
             <button v-for="option in focusQualityOptions" :key="option" type="button"
               :class="{ selected: focusQuality.includes(option) }"
               @click="toggleFocusQuality(option)">{{ option }}</button>
           </div>
-
-          <label>Focus capacity (hours)</label>
-          <input type="number" v-model="focusCapacityHours" />
         </div>
 
         <button type="submit"  class="btn-save">Save</button>
@@ -168,7 +172,7 @@ async function saveMed() {
     </section>
 
     <!-- PROTEIN — coming after submission -->
-    <section v-if="activeTab === 'protein'" class="card card-peri">
+    <section v-if="activeTab === 'protein'" class="card card-yellow">
       <div class="ct">
         <div class="ct-line"></div>
         <div class="ct-inner"><span>✿</span><span>Protein</span><span>✿</span></div>
@@ -178,7 +182,7 @@ async function saveMed() {
     </section>
 
     <!-- ALCOHOL — coming after submission -->
-    <section v-if="activeTab === 'alcohol'" class="card card-peri">
+    <section v-if="activeTab === 'alcohol'" class="card card-yellow">
       <div class="ct">
         <div class="ct-line"></div>
         <div class="ct-inner"><span>˚</span><span>Alcohol</span><span>˚</span></div>

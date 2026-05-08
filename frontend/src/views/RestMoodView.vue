@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useLogsStore } from '../stores/logs'
 
 const logsStore = useLogsStore()
@@ -10,6 +10,7 @@ const calculatedHours = ref(null)
 // tabs
 const activeTab = ref('sleep')
 const tabs = ['sleep', 'mood', 'stress', 'naps']
+watch(activeTab, () => { message.value = '' })
 
 // sleep
 const bedTime = ref('')
@@ -25,21 +26,32 @@ const feltRestedAfter = ref('neutral')
 // mood — array so multiple can be selected at once, toggle pattern like MedicationView
 const mood = ref([])
 const moodStates = ['depressed', 'heavy', 'sad', 'meh', 'neutral', 'positive', 'happy']
-const moodReason = ref('no clear reason')
+const moodReason = ref(['no clear reason'])
 
 function toggleMood(state) {
   const i = mood.value.indexOf(state)
   i > -1 ? mood.value.splice(i, 1) : mood.value.push(state)
 }
 
-// stress — same multi-select pattern
-const stress = ref([])
+// stress — single-select for level, multi-select for reason
+const stress = ref('')
 const stressStates = ['understimulated', 'stress-free', 'balanced', 'debilitating', 'paralyzing']
-const stressReason = ref('no clear reason')
+const stressReason = ref(['no clear reason'])
 
-function toggleStress(state) {
-  const i = stress.value.indexOf(state)
-  i > -1 ? stress.value.splice(i, 1) : stress.value.push(state)
+function toggleMoodReason(reason) {
+  const i = moodReason.value.indexOf(reason)
+  i > -1 ? moodReason.value.splice(i, 1) : moodReason.value.push(reason)
+}
+
+function toggleStressReason(reason) {
+  const i = stressReason.value.indexOf(reason)
+  i > -1 ? stressReason.value.splice(i, 1) : stressReason.value.push(reason)
+}
+
+function formatReasons(reason) {
+  if (!reason) return ''
+  const arr = Array.isArray(reason) ? reason : [reason]
+  return arr.filter(r => r !== 'no clear reason').join(', ')
 }
 
 const reasons = [
@@ -50,6 +62,16 @@ const reasons = [
   'career', 'conflict', 'family', 'hobby', 'relationship',
   'relaxation', 'school', 'social activity', 'social life', 'workload'
 ]
+
+const reasonGroups = {
+  'accomplishment': 'internal', 'loneliness': 'internal', 'low motivation': 'internal',
+  'mentally tired': 'internal', 'overthinking': 'internal', 'overwhelmed': 'internal', 'self image': 'internal',
+  'hunger': 'physical', 'low energy': 'physical', 'sickness': 'physical',
+  'career': 'external', 'conflict': 'external', 'family': 'external', 'hobby': 'external',
+  'relationship': 'external', 'relaxation': 'external', 'school': 'external',
+  'social activity': 'external', 'social life': 'external', 'workload': 'external',
+  'no clear reason': 'neutral'
+}
 
 // ctrl+arrows/numbers switches tabs — only active when this view is mounted
 function handleKeydown(e) {
@@ -142,12 +164,12 @@ async function saveMood() {
 
   message.value = 'Mood logged'
   mood.value = []
-  moodReason.value = 'no clear reason'
+  moodReason.value = ['no clear reason']
   await logsStore.fetchTodayLog(today)
 }
 
 async function saveStress() {
-  if (!stress.value.length) { message.value = 'Pick your stress level first :)'; return }
+  if (!stress.value) { message.value = 'Pick your stress level first :)'; return }
 
   await logsStore.saveStress(today, {
     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -156,8 +178,8 @@ async function saveStress() {
   })
 
   message.value = 'Stress logged'
-  stress.value = []
-  stressReason.value = 'no clear reason'
+  stress.value = ''
+  stressReason.value = ['no clear reason']
   await logsStore.fetchTodayLog(today)
 }
 </script>
@@ -175,20 +197,20 @@ async function saveStress() {
     </div>
 
     <!-- SLEEP -->
-    <section v-if="activeTab === 'sleep'" class="card card-ice">
+    <section v-if="activeTab === 'sleep'" class="card card-purple">
       <div class="ct">
         <div class="ct-line"></div>
         <div class="ct-inner"><span>˚</span><span>Sleep Log</span><span>˚</span></div>
         <div class="ct-line"></div>
       </div>
       <form @submit.prevent="saveSleep">
-        <label>Bed time</label>
+        <label>Fell asleep at</label>
         <input type="text" v-model="bedTime" placeholder="HH:MM" />
 
-        <label>Wake time</label>
+        <label>Woke up at</label>
         <input type="text" v-model="wakeTime" placeholder="HH:MM" />
 
-        <label>Sleep state</label>
+        <label>Woke up feeling</label>
         <div>
           <button v-for="state in sleepStates" :key="state" type="button"
             :data-sleep="state"
@@ -201,7 +223,7 @@ async function saveStress() {
     </section>
 
     <!-- MOOD -->
-    <section v-if="activeTab === 'mood'" class="card card-yellow">
+    <section v-if="activeTab === 'mood'" class="card card-purple">
       <div class="ct">
         <div class="ct-line"></div>
         <div class="ct-inner"><span>♡</span><span>Mood Log</span><span>♡</span></div>
@@ -218,7 +240,8 @@ async function saveStress() {
         <label>Why?</label>
         <div>
           <button v-for="reason in reasons" :key="reason" type="button"
-            :class="{ selected: moodReason === reason }" @click="moodReason = reason">{{ reason }}</button>
+            :data-reason-group="reasonGroups[reason]"
+            :class="{ selected: moodReason.includes(reason) }" @click="toggleMoodReason(reason)">{{ reason }}</button>
         </div>
 
         <button type="submit" class="btn-save">Save mood</button>
@@ -234,30 +257,31 @@ async function saveStress() {
         <div v-for="entry in logsStore.todayLog.moodLogs" :key="entry._id" class="entry-row">
           <span class="entry-time">{{ entry.time }}</span>
           <span class="entry-value">{{ Array.isArray(entry.value) ? entry.value.join(', ') : entry.value }}</span>
-          <span class="entry-reason" v-if="entry.reason && entry.reason !== 'no clear reason'">· {{ entry.reason }}</span>
+          <span class="entry-reason" v-if="formatReasons(entry.reason)">· {{ formatReasons(entry.reason) }}</span>
         </div>
       </div>
     </section>
 
     <!-- STRESS -->
-    <section v-if="activeTab === 'stress'" class="card card-yellow">
+    <section v-if="activeTab === 'stress'" class="card card-purple">
       <div class="ct">
         <div class="ct-line"></div>
         <div class="ct-inner"><span>⋆</span><span>Stress Log</span><span>⋆</span></div>
         <div class="ct-line"></div>
       </div>
       <form @submit.prevent="saveStress">
-        <label>Current stress level</label>
+        <label>How stressed are you currently?</label>
         <div>
           <button v-for="state in stressStates" :key="state" type="button"
             :data-stress="state"
-            :class="{ selected: stress.includes(state) }" @click="toggleStress(state)">{{ state }}</button>
+            :class="{ selected: stress === state }" @click="stress = state">{{ state }}</button>
         </div>
 
         <label>Why?</label>
         <div>
           <button v-for="reason in reasons" :key="reason" type="button"
-            :class="{ selected: stressReason === reason }" @click="stressReason = reason">{{ reason }}</button>
+            :data-reason-group="reasonGroups[reason]"
+            :class="{ selected: stressReason.includes(reason) }" @click="toggleStressReason(reason)">{{ reason }}</button>
         </div>
 
         <button type="submit" class="btn-save">Save stress level</button>
@@ -273,28 +297,29 @@ async function saveStress() {
         <div v-for="entry in logsStore.todayLog.stressLogs" :key="entry._id" class="entry-row">
           <span class="entry-time">{{ entry.time }}</span>
           <span class="entry-value">{{ Array.isArray(entry.value) ? entry.value.join(', ') : entry.value }}</span>
-          <span class="entry-reason" v-if="entry.reason && entry.reason !== 'no clear reason'">· {{ entry.reason }}</span>
+          <span class="entry-reason" v-if="formatReasons(entry.reason)">· {{ formatReasons(entry.reason) }}</span>
         </div>
       </div>
     </section>
 
     <!-- NAPS -->
-    <section v-if="activeTab === 'naps'" class="card card-ice">
+    <section v-if="activeTab === 'naps'" class="card card-purple">
       <div class="ct">
         <div class="ct-line"></div>
         <div class="ct-inner"><span>✿</span><span>Nap Log</span><span>✿</span></div>
         <div class="ct-line"></div>
       </div>
       <form @submit.prevent="saveNap">
-        <label>Nap start</label>
+        <label>Fell asleep at</label>
         <input type="time" v-model="napStart" />
 
-        <label>Nap end</label>
+        <label>Woke up at</label>
         <input type="time" v-model="napEnd" />
 
-        <label>Felt after nap</label>
+        <label>Woke up feeling</label>
         <div>
           <button v-for="state in sleepStates" :key="state" type="button"
+            :data-sleep="state"
             :class="{ selected: feltRestedAfter === state }" @click="feltRestedAfter = state">{{ state }}</button>
         </div>
 

@@ -17,6 +17,14 @@ onMounted(async () => {
   await capacityStore.fetchCapacity(today)
   await capacityStore.fetchInsights()
 })
+
+function formatHours(h) {
+  if (!h) return '—'
+  const hrs = Math.floor(h)
+  const mins = Math.round((h - hrs) * 60)
+  if (mins === 0) return `${hrs}h`
+  return `${hrs}h ${mins}m`
+}
 </script>
 
 <template>
@@ -36,7 +44,7 @@ onMounted(async () => {
 
       <div class="summary-row" v-if="logsStore.todayLog?.sleep?.hours">
         <span class="summary-label">Sleep</span>
-        <span class="summary-value">{{ logsStore.todayLog.sleep.hours }}h — {{ logsStore.todayLog.sleep.state }}</span>
+        <span class="summary-value">{{ formatHours(logsStore.todayLog.sleep.hours) }} — {{ logsStore.todayLog.sleep.state }}</span>
       </div>
       <div class="summary-row" v-else>
         <span class="summary-label">Sleep</span>
