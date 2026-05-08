@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useCapacityStore } from '../stores/capacity'
 import { useLogsStore } from '../stores/logs'
 import CapacityGauge from '../components/CapacityGauge.vue'
@@ -8,15 +8,22 @@ const capacityStore = useCapacityStore()
 const logsStore = useLogsStore()
 const today = new Date().toLocaleDateString('en-CA')
 
+const error = ref(null)
+
 onMounted(async () => {
-  await logsStore.fetchTodayLog(today)
-  await capacityStore.fetchCapacity(today)
-  await capacityStore.fetchPrediction()
+  try {
+    await logsStore.fetchTodayLog(today)
+    await capacityStore.fetchCapacity(today)
+    await capacityStore.fetchPrediction()
+  } catch {
+    error.value = 'Could not load capacity data. Check your connection.'
+  }
 })
 </script>
 
 <template>
   <main>
+    <p v-if="error" class="state-error">{{ error }}</p>
     <section class="card card-pink">
       <div class="ct">
         <div class="ct-line"></div>
@@ -66,11 +73,11 @@ onMounted(async () => {
 
       <!-- factors -->
       <div v-if="capacityStore.score?.factors?.length">
-        <div v-for="factor in capacityStore.score.factors" :key="factor.label"
-          class="factor-row" :class="factor.positive ? 'factor-pos' : 'factor-neg'">
+        <div v-for="factor in capacityStore.score.factors" :key="factor.key || factor.label"
+          class="factor-row" :class="factor.neutral ? 'factor-neutral' : factor.positive ? 'factor-pos' : 'factor-neg'">
           <span>{{ factor.label }}</span>
-          <span class="factor-impact" :class="factor.positive ? 'positive' : 'negative'">
-            {{ factor.positive ? '+' : '-' }}{{ Math.round(factor.impact * 100) / 100 }}
+          <span class="factor-impact" :class="factor.neutral ? 'neutral' : factor.positive ? 'positive' : 'negative'">
+            {{ factor.neutral ? '~' : factor.positive ? '+' : '-' }}{{ Math.round(factor.impact * 100) / 100 }}
           </span>
         </div>
       </div>
@@ -96,6 +103,24 @@ onMounted(async () => {
         </div>
       </div>
       <p v-else>Loading...</p>
+    </section>
+
+    <!-- CALIBRATE -->
+    <section class="card card-blue">
+      <div class="ct">
+        <div class="ct-line"></div>
+        <div class="ct-inner"><span>✦</span><span>Weight Learning</span><span>✦</span></div>
+        <div class="ct-line"></div>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+        Recalculates how much each factor contributes to your capacity based on your end-of-day ratings. Needs at least 7 rated days.
+      </p>
+      <button class="btn-save" @click="capacityStore.calibrate()" :disabled="capacityStore.calibrating">
+        {{ capacityStore.calibrating ? 'Calibrating...' : 'Run calibration' }}
+      </button>
+      <p v-if="capacityStore.calibrateMessage" class="message" style="margin-top: 10px;">
+        {{ capacityStore.calibrateMessage }}
+      </p>
     </section>
   </main>
 </template>

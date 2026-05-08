@@ -902,3 +902,101 @@ label:has(input[type="checkbox"]) {
   0%   { opacity: 1; transform: translate(0, 0) scale(1); }
   100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0); }
 }
+
+/* ========== END OF DAY RATING ========== */
+.rating-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.btn-rating {
+  background: none;
+  border: 1.5px dashed color-mix(in srgb, var(--text-muted) 40%, transparent);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-family: var(--mf);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  flex: 1;
+  min-width: 32px;
+}
+
+.btn-rating:hover { border-color: var(--accent-pink); color: var(--accent-pink); }
+
+.btn-rating.selected {
+  background: var(--accent-pink);
+  border-color: var(--accent-pink);
+  border-style: solid;
+  color: var(--text-primary);
+}
+
+.rating-anchors {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--bf);
+  font-style: italic;
+}
+
+/* ========== STATE MESSAGES ========== */
+.state-loading {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 12px 0;
+  font-style: italic;
+}
+
+.state-empty {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 12px 0;
+}
+
+.state-error {
+  text-align: center;
+  font-size: 13px;
+  color: var(--bad);
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--bad) 10%, transparent);
+  border-radius: var(--ra);
+  margin-bottom: 12px;
+}
+
+/* ========== COMING SOON ========== */
+.coming-soon {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 12px 0;
+}
+
+/* ========== MOBILE ========== */
+@media (max-width: 480px) {
+  main { padding: 16px 12px 72px; }
+
+  nav { padding: 0 12px; gap: 4px; overflow-x: auto; }
+  nav .nav-link { font-size: 12px; padding: 12px 8px; white-space: nowrap; }
+
+  .card { padding: 16px 14px; margin-bottom: 12px; }
+
+  .tabs { overflow-x: auto; gap: 0; }
+  .tab-btn { padding: 10px 12px; font-size: 12px; white-space: nowrap; }
+
+  .card button[type="button"] { padding: 5px 10px; font-size: 11px; }
+  .btn-save { padding: 11px; font-size: 12px; }
+
+  .cap-sidebar { gap: 10px; }
+  .task-actions { gap: 4px; }
+  .ct { font-size: 11px; }
+
+  #cursor { display: none; }
+}

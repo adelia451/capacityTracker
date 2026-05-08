@@ -217,7 +217,61 @@ async function saveStress(date, stressData) {
     }
   }
 
-  // Whatever you return here is accessible to any component using this store.
-  // Anything you don't return stays private to this file.
-  return { logs, todayLog, saveSleep, saveNap, saveMood, saveStress, fetchTodayLog, saveMedication }
+  // ---------- SAVE ALCOHOL ----------
+  async function saveAlcohol(date, drinks) {
+    try {
+      const res = await axios.post('http://localhost:3000/api/logs', {
+        date,
+        alcohol: drinks
+      })
+      todayLog.value = res.data
+    } catch (err) {
+      if (err.response?.status === 400) {
+        try {
+          const existing = await axios.get(`http://localhost:3000/api/logs/${date}`)
+          const res = await axios.put(
+            `http://localhost:3000/api/logs/${existing.data._id}`,
+            { alcohol: drinks }
+          )
+          todayLog.value = res.data
+        } catch (fetchErr) {
+          console.error('Failed to fetch existing log:', fetchErr)
+          throw fetchErr
+        }
+      } else {
+        console.error('Failed to save alcohol:', err)
+        throw err
+      }
+    }
+  }
+
+  // ---------- SAVE RATING ----------
+  async function saveRating(date, rating) {
+    try {
+      const res = await axios.post('http://localhost:3000/api/logs', {
+        date,
+        actualCapacityRating: rating
+      })
+      todayLog.value = res.data
+    } catch (err) {
+      if (err.response?.status === 400) {
+        try {
+          const existing = await axios.get(`http://localhost:3000/api/logs/${date}`)
+          const res = await axios.put(
+            `http://localhost:3000/api/logs/${existing.data._id}`,
+            { actualCapacityRating: rating }
+          )
+          todayLog.value = res.data
+        } catch (fetchErr) {
+          console.error('Failed to fetch existing log:', fetchErr)
+          throw fetchErr
+        }
+      } else {
+        console.error('Failed to save rating:', err)
+        throw err
+      }
+    }
+  }
+
+  return { logs, todayLog, saveSleep, saveNap, saveMood, saveStress, fetchTodayLog, saveMedication, saveAlcohol, saveRating }
 })

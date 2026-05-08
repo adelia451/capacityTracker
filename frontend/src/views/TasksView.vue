@@ -162,7 +162,9 @@ const categoryColor = {
         <div class="ct-inner"><span>✦</span><span>Today's Tasks</span><span>✦</span></div>
         <div class="ct-line"></div>
       </div>
-      <p v-if="tasksStore.tasks.length === 0">No tasks for today — syncing from Google Calendar...</p>
+      <p v-if="tasksStore.loading" class="state-loading">Syncing with Google Calendar...</p>
+      <p v-else-if="tasksStore.error" class="state-error">{{ tasksStore.error }}</p>
+      <p v-else-if="tasksStore.tasks.length === 0" class="state-empty">No tasks scheduled for today.</p>
 
       <div v-for="task in tasksStore.tasks" :key="task._id" class="task-item">
 

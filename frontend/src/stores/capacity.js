@@ -41,5 +41,33 @@ export const useCapacityStore = defineStore('capacity', () => {
     }
   }
 
-  return { score, prediction, insights, fetchCapacity, fetchPrediction, fetchInsights }
+  const correlations = ref(null)
+
+  async function fetchCorrelations() {
+    try {
+      const res = await axios.get('http://localhost:3000/api/correlations')
+      correlations.value = res.data
+    } catch (err) {
+      console.error('Failed to fetch correlations:', err)
+    }
+  }
+
+  const calibrating = ref(false)
+  const calibrateMessage = ref(null)
+
+  async function calibrate() {
+    calibrating.value = true
+    calibrateMessage.value = null
+    try {
+      const res = await axios.post('http://localhost:3000/api/calibrate')
+      calibrateMessage.value = res.data?.message || 'Weights updated!'
+    } catch (err) {
+      calibrateMessage.value = err.response?.data?.message || 'Not enough data yet — need at least 7 rated days.'
+      console.error('Calibration failed:', err)
+    } finally {
+      calibrating.value = false
+    }
+  }
+
+  return { score, prediction, insights, correlations, calibrating, calibrateMessage, fetchCapacity, fetchPrediction, fetchInsights, fetchCorrelations, calibrate }
 })

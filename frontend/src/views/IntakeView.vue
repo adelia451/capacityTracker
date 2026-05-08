@@ -26,6 +26,9 @@ const skipped = ref(false)
 const selectedSkipReasons = ref([])
 const skipReasonOptions = ['low energy', 'emotional state', 'light workload', 'intentional rest', 'outing']
 
+// alcohol
+const alcoholDrinks = ref(null)
+
 function toggleMedQuality(val) {
   const i = medQuality.value.indexOf(val)
   i > -1 ? medQuality.value.splice(i, 1) : medQuality.value.push(val)
@@ -63,6 +66,9 @@ function handleKeydown(e) {
 
 onMounted(async () => {
   await logsStore.fetchTodayLog(today)
+  if (logsStore.todayLog?.alcohol != null) {
+    alcoholDrinks.value = logsStore.todayLog.alcohol
+  }
   const med = logsStore.todayLog?.medication
   if (med) {
     takenAt.value             = med.takenAt || ''
@@ -86,6 +92,11 @@ function calcFocusHours() {
   const [eh, em] = feltEnd.value.split(':').map(Number)
   if (isNaN(oh) || isNaN(eh)) return null
   return Math.round(((eh * 60 + em) - (oh * 60 + om)) / 60 * 10) / 10
+}
+
+async function saveAlcohol() {
+  await logsStore.saveAlcohol(today, alcoholDrinks.value ?? 0)
+  message.value = 'Saved!'
 }
 
 async function saveMed() {
@@ -178,17 +189,25 @@ async function saveMed() {
         <div class="ct-inner"><span>✿</span><span>Protein</span><span>✿</span></div>
         <div class="ct-line"></div>
       </div>
-      <p>Coming after submission</p>
+      <p class="coming-soon">Not currently tracked.</p>
     </section>
 
-    <!-- ALCOHOL — coming after submission -->
+    <!-- ALCOHOL -->
     <section v-if="activeTab === 'alcohol'" class="card card-yellow">
       <div class="ct">
         <div class="ct-line"></div>
         <div class="ct-inner"><span>˚</span><span>Alcohol</span><span>˚</span></div>
         <div class="ct-line"></div>
       </div>
-      <p>Coming after submission</p>
+      <form @submit.prevent="saveAlcohol">
+        <label>Drinks today</label>
+        <div>
+          <button v-for="n in [0,1,2,3,4,5,6,7,8]" :key="n" type="button"
+            :class="{ selected: alcoholDrinks === n }"
+            @click="alcoholDrinks = n">{{ n === 0 ? 'none' : n }}</button>
+        </div>
+        <button type="submit" class="btn-save">Save</button>
+      </form>
     </section>
 
     <p v-if="message" class="message">{{ message }}</p>

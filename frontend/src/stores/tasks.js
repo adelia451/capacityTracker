@@ -4,32 +4,32 @@ import axios from 'axios'
 
 export const useTasksStore = defineStore('tasks', () => {
 
-  // tasks for the current date — populated from Google Calendar sync
   const tasks = ref([])
+  const loading = ref(false)
+  const error = ref(null)
 
-  // syncs GCal then immediately fetches tasks for the given date
-  // called automatically on mount so the page is always up to date
   async function syncAndFetch(date) {
+    loading.value = true
+    error.value = null
     try {
       await axios.post('http://localhost:3000/api/gcal/sync')
       const res = await axios.get(`http://localhost:3000/api/tasks/${date}`)
       tasks.value = res.data
     } catch (err) {
       if (err.response?.status === 404) {
-        tasks.value = [] // no tasks for today — not an error
+        tasks.value = []
       } else {
+        error.value = 'Could not load tasks. Check your connection.'
         console.error('Failed to sync/fetch tasks:', err)
       }
+    } finally {
+      loading.value = false
     }
   }
 
-  // update a task — used for setting effort weight and deferring
-  // "defer" increments timesPostponed so the insight engine can track avoidance patterns
-  // the actual event is moved in Google Calendar — this just tells the app you moved it
   async function updateTask(id, data) {
     try {
       const res = await axios.put(`http://localhost:3000/api/tasks/${id}`, data)
-      // replace the updated task in the local array so the UI updates immediately
       const i = tasks.value.findIndex(t => t._id === id)
       if (i > -1) tasks.value[i] = res.data
     } catch (err) {
@@ -37,5 +37,5 @@ export const useTasksStore = defineStore('tasks', () => {
     }
   }
 
-  return { tasks, syncAndFetch, updateTask }
+  return { tasks, loading, error, syncAndFetch, updateTask }
 })
