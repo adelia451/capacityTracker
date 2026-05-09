@@ -217,6 +217,34 @@ async function saveStress(date, stressData) {
     }
   }
 
+  // ---------- DELETE ENTRIES ----------
+  async function deleteMoodEntry(logId, entryId) {
+    try {
+      const res = await axios.delete(`http://localhost:3000/api/logs/${logId}/mood/${entryId}`)
+      todayLog.value = res.data
+    } catch (err) {
+      console.error('Failed to delete mood entry:', err)
+    }
+  }
+
+  async function deleteStressEntry(logId, entryId) {
+    try {
+      const res = await axios.delete(`http://localhost:3000/api/logs/${logId}/stress/${entryId}`)
+      todayLog.value = res.data
+    } catch (err) {
+      console.error('Failed to delete stress entry:', err)
+    }
+  }
+
+  async function deleteNapEntry(logId, entryId) {
+    try {
+      const res = await axios.delete(`http://localhost:3000/api/logs/${logId}/nap/${entryId}`)
+      todayLog.value = res.data
+    } catch (err) {
+      console.error('Failed to delete nap entry:', err)
+    }
+  }
+
   // ---------- SAVE ALCOHOL ----------
   async function saveAlcohol(date, drinks) {
     try {
@@ -273,5 +301,5 @@ async function saveStress(date, stressData) {
     }
   }
 
-  return { logs, todayLog, saveSleep, saveNap, saveMood, saveStress, fetchTodayLog, saveMedication, saveAlcohol, saveRating }
+  return { logs, todayLog, saveSleep, saveNap, saveMood, saveStress, fetchTodayLog, saveMedication, saveAlcohol, saveRating, deleteMoodEntry, deleteStressEntry, deleteNapEntry }
 })

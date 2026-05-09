@@ -1,117 +1,113 @@
-<script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+<script>
 import { useLogsStore } from '../stores/logs'
 
-const logsStore = useLogsStore()
-const today = new Date().toLocaleDateString('en-CA')
-const message = ref('')
-
-// tabs
-const activeTab = ref('medication')
-const tabs = ['medication', 'protein', 'alcohol']
-
-// medication
-const takenAt = ref('')
-const feltOnset = ref('')
-const feltPeak = ref('')
-const feltEnd = ref('')
-
-const medQuality = ref([])
-const medQualityOptions = ['no effect', 'lightly felt', 'felt', 'strongly felt']
-
-const focusQuality = ref([])
-const focusQualityOptions = ['unfocused', 'focused', 'locked-in']
-
-const skipped = ref(false)
-const selectedSkipReasons = ref([])
-const skipReasonOptions = ['low energy', 'emotional state', 'light workload', 'intentional rest', 'outing']
-
-// alcohol
-const alcoholDrinks = ref(null)
-
-function toggleMedQuality(val) {
-  const i = medQuality.value.indexOf(val)
-  i > -1 ? medQuality.value.splice(i, 1) : medQuality.value.push(val)
-}
-
-function toggleFocusQuality(val) {
-  const i = focusQuality.value.indexOf(val)
-  i > -1 ? focusQuality.value.splice(i, 1) : focusQuality.value.push(val)
-}
-
-function toggleSkipReason(val) {
-  const i = selectedSkipReasons.value.indexOf(val)
-  i > -1 ? selectedSkipReasons.value.splice(i, 1) : selectedSkipReasons.value.push(val)
-}
-
-// ctrl+arrows/numbers switches tabs — only active when this view is mounted
-function handleKeydown(e) {
-  if (!e.ctrlKey) return
-  if (e.key === 'ArrowRight') {
-    e.preventDefault()
-    const i = tabs.indexOf(activeTab.value)
-    activeTab.value = tabs[(i + 1) % tabs.length]
+export default {
+  name: 'IntakeView',
+  setup() {
+    return {
+      logsStore: useLogsStore()
+    }
+  },
+  data() {
+    return {
+      today: new Date().toLocaleDateString('en-CA'),
+      message: '',
+      activeTab: 'medication',
+      tabs: ['medication', 'protein', 'alcohol'],
+      takenAt: '',
+      feltOnset: '',
+      feltPeak: '',
+      feltEnd: '',
+      medQuality: [],
+      medQualityOptions: ['no effect', 'lightly felt', 'felt', 'strongly felt'],
+      focusQuality: [],
+      focusQualityOptions: ['unfocused', 'focused', 'locked-in'],
+      skipped: false,
+      selectedSkipReasons: [],
+      skipReasonOptions: ['low energy', 'emotional state', 'light workload', 'intentional rest', 'outing'],
+      alcoholDrinks: null,
+      boundKeydown: null
+    }
+  },
+  methods: {
+    toggleMedQuality(val) {
+      const i = this.medQuality.indexOf(val)
+      i > -1 ? this.medQuality.splice(i, 1) : this.medQuality.push(val)
+    },
+    toggleFocusQuality(val) {
+      const i = this.focusQuality.indexOf(val)
+      i > -1 ? this.focusQuality.splice(i, 1) : this.focusQuality.push(val)
+    },
+    toggleSkipReason(val) {
+      const i = this.selectedSkipReasons.indexOf(val)
+      i > -1 ? this.selectedSkipReasons.splice(i, 1) : this.selectedSkipReasons.push(val)
+    },
+    handleKeydown(e) {
+      if (!e.ctrlKey) return
+      if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        const i = this.tabs.indexOf(this.activeTab)
+        this.activeTab = this.tabs[(i + 1) % this.tabs.length]
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        const i = this.tabs.indexOf(this.activeTab)
+        this.activeTab = this.tabs[(i - 1 + this.tabs.length) % this.tabs.length]
+      }
+      const num = parseInt(e.key)
+      if (!isNaN(num) && num >= 1 && num <= this.tabs.length) {
+        e.preventDefault()
+        this.activeTab = this.tabs[num - 1]
+      }
+    },
+    calcFocusHours() {
+      if (!this.feltOnset || !this.feltEnd) return null
+      const [oh, om] = this.feltOnset.split(':').map(Number)
+      const [eh, em] = this.feltEnd.split(':').map(Number)
+      if (isNaN(oh) || isNaN(eh)) return null
+      return Math.round(((eh * 60 + em) - (oh * 60 + om)) / 60 * 10) / 10
+    },
+    async saveMed() {
+      await this.logsStore.saveMedication(this.today, {
+        takenAt: this.takenAt,
+        feltOnset: this.feltOnset,
+        feltPeak: this.feltPeak,
+        feltEnd: this.feltEnd,
+        focusCapacityHours: this.calcFocusHours(),
+        medQuality: this.medQuality,
+        focusQuality: this.focusQuality,
+        skipped: this.skipped,
+        skipReasons: this.selectedSkipReasons
+      })
+      this.message = 'Saved!'
+    },
+    async saveAlcohol() {
+      await this.logsStore.saveAlcohol(this.today, this.alcoholDrinks ?? 0)
+      this.message = 'Saved!'
+    }
+  },
+  async mounted() {
+    await this.logsStore.fetchTodayLog(this.today)
+    if (this.logsStore.todayLog?.alcohol != null) {
+      this.alcoholDrinks = this.logsStore.todayLog.alcohol
+    }
+    const med = this.logsStore.todayLog?.medication
+    if (med) {
+      this.takenAt             = med.takenAt || ''
+      this.feltOnset           = med.feltOnset || ''
+      this.feltPeak            = med.feltPeak || ''
+      this.feltEnd             = med.feltEnd || ''
+      this.medQuality          = med.medQuality || []
+      this.focusQuality        = med.focusQuality || []
+      this.skipped             = med.skipped || false
+      this.selectedSkipReasons = med.skipReasons || []
+    }
+    this.boundKeydown = (e) => this.handleKeydown(e)
+    window.addEventListener('keydown', this.boundKeydown)
+  },
+  unmounted() {
+    window.removeEventListener('keydown', this.boundKeydown)
   }
-  if (e.key === 'ArrowLeft') {
-    e.preventDefault()
-    const i = tabs.indexOf(activeTab.value)
-    activeTab.value = tabs[(i - 1 + tabs.length) % tabs.length]
-  }
-  const num = parseInt(e.key)
-  if (!isNaN(num) && num >= 1 && num <= tabs.length) {
-    e.preventDefault()
-    activeTab.value = tabs[num - 1]
-  }
-}
-
-onMounted(async () => {
-  await logsStore.fetchTodayLog(today)
-  if (logsStore.todayLog?.alcohol != null) {
-    alcoholDrinks.value = logsStore.todayLog.alcohol
-  }
-  const med = logsStore.todayLog?.medication
-  if (med) {
-    takenAt.value             = med.takenAt || ''
-    feltOnset.value           = med.feltOnset || ''
-    feltPeak.value            = med.feltPeak || ''
-    feltEnd.value             = med.feltEnd || ''
-    medQuality.value          = med.medQuality || []
-    focusQuality.value        = med.focusQuality || []
-    skipped.value             = med.skipped || false
-    selectedSkipReasons.value = med.skipReasons || []
-  }
-  window.addEventListener('keydown', handleKeydown)
-})
-
-onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
-
-// calculate focus capacity hours automatically from onset → end
-function calcFocusHours() {
-  if (!feltOnset.value || !feltEnd.value) return null
-  const [oh, om] = feltOnset.value.split(':').map(Number)
-  const [eh, em] = feltEnd.value.split(':').map(Number)
-  if (isNaN(oh) || isNaN(eh)) return null
-  return Math.round(((eh * 60 + em) - (oh * 60 + om)) / 60 * 10) / 10
-}
-
-async function saveAlcohol() {
-  await logsStore.saveAlcohol(today, alcoholDrinks.value ?? 0)
-  message.value = 'Saved!'
-}
-
-async function saveMed() {
-  await logsStore.saveMedication(today, {
-    takenAt: takenAt.value,
-    feltOnset: feltOnset.value,
-    feltPeak: feltPeak.value,
-    feltEnd: feltEnd.value,
-    focusCapacityHours: calcFocusHours(),
-    medQuality: medQuality.value,
-    focusQuality: focusQuality.value,
-    skipped: skipped.value,
-    skipReasons: selectedSkipReasons.value
-  })
-  message.value = 'Saved!'
 }
 </script>
 
@@ -182,7 +178,7 @@ async function saveMed() {
       </form>
     </section>
 
-    <!-- PROTEIN — coming after submission -->
+    <!-- PROTEIN -->
     <section v-if="activeTab === 'protein'" class="card card-yellow">
       <div class="ct">
         <div class="ct-line"></div>

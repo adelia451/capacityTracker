@@ -1,44 +1,51 @@
-<script setup>
-import { ref, onMounted } from 'vue'
+<script>
 import { useLogsStore } from '../stores/logs'
 import { useCapacityStore } from '../stores/capacity'
 import CapacityGauge from '../components/CapacityGauge.vue'
 
-const logsStore = useLogsStore()
-const capacityStore = useCapacityStore()
-const today = new Date().toLocaleDateString('en-CA')
-
-const dateDisplay = new Date().toLocaleDateString('en-US', {
-  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-})
-
-const error = ref(null)
-
-onMounted(async () => {
-  try {
-    await logsStore.fetchTodayLog(today)
-    await capacityStore.fetchCapacity(today)
-    await capacityStore.fetchInsights()
-    await capacityStore.fetchCorrelations()
-  } catch {
-    error.value = 'Could not load data. Check your connection.'
+export default {
+  name: 'HomeView',
+  components: { CapacityGauge },
+  setup() {
+    return {
+      logsStore: useLogsStore(),
+      capacityStore: useCapacityStore()
+    }
+  },
+  data() {
+    return {
+      today: new Date().toLocaleDateString('en-CA'),
+      dateDisplay: new Date().toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      }),
+      error: null,
+      ratingMessage: ''
+    }
+  },
+  methods: {
+    formatHours(h) {
+      if (!h) return '—'
+      const hrs = Math.floor(h)
+      const mins = Math.round((h - hrs) * 60)
+      if (mins === 0) return `${hrs}h`
+      return `${hrs}h ${mins}m`
+    },
+    async saveRating(n) {
+      await this.logsStore.saveRating(this.today, n)
+      this.ratingMessage = 'Rating saved!'
+      await this.logsStore.fetchTodayLog(this.today)
+    }
+  },
+  async mounted() {
+    try {
+      await this.logsStore.fetchTodayLog(this.today)
+      await this.capacityStore.fetchCapacity(this.today)
+      await this.capacityStore.fetchInsights()
+      await this.capacityStore.fetchCorrelations()
+    } catch {
+      this.error = 'Could not load data. Check your connection.'
+    }
   }
-})
-
-function formatHours(h) {
-  if (!h) return '—'
-  const hrs = Math.floor(h)
-  const mins = Math.round((h - hrs) * 60)
-  if (mins === 0) return `${hrs}h`
-  return `${hrs}h ${mins}m`
-}
-
-const ratingMessage = ref('')
-
-async function saveRating(n) {
-  await logsStore.saveRating(today, n)
-  ratingMessage.value = 'Rating saved!'
-  await logsStore.fetchTodayLog(today)
 }
 </script>
 

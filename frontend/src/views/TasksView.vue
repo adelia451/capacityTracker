@@ -1,102 +1,98 @@
-<script setup>
-import { ref, computed, onMounted } from 'vue'
+<script>
 import { useTasksStore } from '../stores/tasks'
 import { useCapacityStore } from '../stores/capacity'
 
-const tasksStore = useTasksStore()
-const capacityStore = useCapacityStore()
-const today = new Date().toLocaleDateString('en-CA')
-
-// tracks which tasks are expanded — click header to toggle
-const expanded = ref(new Set())
-
-function toggleExpand(id) {
-  if (expanded.value.has(id)) {
-    expanded.value.delete(id)
-  } else {
-    expanded.value.add(id)
+export default {
+  name: 'TasksView',
+  setup() {
+    return {
+      tasksStore: useTasksStore(),
+      capacityStore: useCapacityStore()
+    }
+  },
+  data() {
+    return {
+      today: new Date().toLocaleDateString('en-CA'),
+      expanded: new Set(),
+      classSkipReasons: ['sick', 'workload', 'period pain', 'low mood', 'tiredness'],
+      categoryColor: {
+        class:       'var(--class)',
+        homework:    'var(--homew)',
+        practice:    'var(--pract)',
+        projects:    'var(--proje)',
+        admin:       'var(--admin)',
+        maintenance: 'var(--maint)',
+        social:      'var(--socia)',
+      }
+    }
+  },
+  computed: {
+    plannedLoad() {
+      return this.tasksStore.tasks.reduce((sum, task) => sum + (task.effortWeight || 0), 0)
+    },
+    totalMinutes() {
+      return this.tasksStore.tasks
+        .filter(task => task.completed || !task.timesPostponed)
+        .reduce((sum, task) => sum + (task.timeSpent || 0), 0)
+    },
+    minutesByCategory() {
+      const map = {}
+      this.tasksStore.tasks
+        .filter(task => task.completed || !task.timesPostponed)
+        .forEach(task => {
+          if (!map[task.category]) map[task.category] = 0
+          map[task.category] += task.timeSpent || 0
+        })
+      return map
+    }
+  },
+  methods: {
+    toggleExpand(id) {
+      if (this.expanded.has(id)) {
+        this.expanded.delete(id)
+      } else {
+        this.expanded.add(id)
+      }
+      this.expanded = new Set(this.expanded)
+    },
+    formatMinutes(mins) {
+      if (!mins) return '—'
+      const h = Math.floor(mins / 60)
+      const m = mins % 60
+      if (h === 0) return `${m}m`
+      if (m === 0) return `${h}h`
+      return `${h}h ${m}m`
+    },
+    formatTime(dt) {
+      if (!dt) return '—'
+      return new Date(dt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    },
+    setEffort(task, weight) {
+      this.tasksStore.updateTask(task._id, { effortWeight: weight })
+    },
+    defer(task) {
+      this.tasksStore.updateTask(task._id, { timesPostponed: (task.timesPostponed || 0) + 1 })
+    },
+    undoDefer(task) {
+      this.tasksStore.updateTask(task._id, { timesPostponed: Math.max(0, (task.timesPostponed || 0) - 1) })
+    },
+    complete(task) {
+      this.tasksStore.updateTask(task._id, { completed: !task.completed })
+    },
+    toggleClassSkip(task) {
+      this.tasksStore.updateTask(task._id, { skippedClass: !task.skippedClass })
+    },
+    toggleClassSkipReason(task, reason) {
+      const current = task.skipClassReasons || []
+      const i = current.indexOf(reason)
+      const next = i > -1 ? current.filter(r => r !== reason) : [...current, reason]
+      this.tasksStore.updateTask(task._id, { skipClassReasons: next })
+    }
+  },
+  async mounted() {
+    await this.tasksStore.syncAndFetch(this.today)
+    await this.capacityStore.fetchCapacity(this.today)
   }
-  expanded.value = new Set(expanded.value) // trigger reactivity
-}
-
-onMounted(async () => {
-  await tasksStore.syncAndFetch(today)
-  await capacityStore.fetchCapacity(today)
-})
-
-// planned load = sum of effort weights across all tasks
-const plannedLoad = computed(() =>
-  tasksStore.tasks.reduce((sum, task) => sum + (task.effortWeight || 0), 0)
-)
-
-// total minutes worked today across all tasks
-const totalMinutes = computed(() =>
-  tasksStore.tasks.reduce((sum, task) => sum + (task.timeSpent || 0), 0)
-)
-
-// minutes worked broken down by category
-const minutesByCategory = computed(() => {
-  const map = {}
-  tasksStore.tasks.forEach(task => {
-    if (!map[task.category]) map[task.category] = 0
-    map[task.category] += task.timeSpent || 0
-  })
-  return map
-})
-
-// converts minutes to "Xh Ym" display string
-function formatMinutes(mins) {
-  if (!mins) return '—'
-  const h = Math.floor(mins / 60)
-  const m = mins % 60
-  if (h === 0) return `${m}m`
-  if (m === 0) return `${h}h`
-  return `${h}h ${m}m`
-}
-
-// formats a dateTime string to HH:MM local time
-function formatTime(dt) {
-  if (!dt) return '—'
-  return new Date(dt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-}
-
-function setEffort(task, weight) {
-  tasksStore.updateTask(task._id, { effortWeight: weight })
-}
-
-function defer(task) {
-  tasksStore.updateTask(task._id, { timesPostponed: (task.timesPostponed || 0) + 1 })
-}
-
-function undoDefer(task) {
-  tasksStore.updateTask(task._id, { timesPostponed: Math.max(0, (task.timesPostponed || 0) - 1) })
-}
-
-function complete(task) {
-  tasksStore.updateTask(task._id, { completed: !task.completed })
-}
-
-const classSkipReasons = ['sick', 'workload', 'period pain', 'low mood', 'tiredness']
-
-function toggleClassSkip(task) {
-  tasksStore.updateTask(task._id, { skippedClass: !task.skippedClass })
-}
-
-function toggleClassSkipReason(task, reason) {
-  const current = task.skipClassReasons || []
-  const i = current.indexOf(reason)
-  const next = i > -1 ? current.filter(r => r !== reason) : [...current, reason]
-  tasksStore.updateTask(task._id, { skipClassReasons: next })
-}
-
-const categoryColor = {
-  class:       'var(--class)',
-  homework:    'var(--homew)',
-  practice:    'var(--pract)',
-  projects:    'var(--proje)',
-  admin:       'var(--admin)',
-  maintenance: 'var(--maint)',
-  social:      'var(--socia)',
 }
 </script>
 

@@ -11,7 +11,7 @@
   
   --light-cyan: #c0e0ff;
   --blue: #88a2ff;
-  --mid-blue: #5f7dff;     /* unused */
+  --mid-blue: #5f7dff;
   --dark-blue: #253a82;
 
   --light-pink: #ffd9fb;
@@ -342,6 +342,17 @@ select:focus {
   letter-spacing: 0.05em;
   cursor: pointer;
   transition: opacity 0.2s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-save::before {
+  font-family: 'Material Symbols Rounded';
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  content: '\e5ca';
+  font-size: 16px;
 }
 
 .btn-save:hover {
@@ -572,11 +583,6 @@ label:has(input[type="checkbox"]) {
 }
 
 /* ========== GAUGE ANIMATIONS ========== */
-@keyframes ring-pulse {
-  0%, 100% { filter: drop-shadow(0 0 8px var(--accent-pink)); }
-  50%       { filter: drop-shadow(0 0 18px var(--accent-pink)) drop-shadow(0 0 30px var(--purple)); }
-}
-
 @keyframes gauge-float {
   0%, 100% { transform: rotate(0deg); }
   50%       { transform: rotate(2deg); }
@@ -687,6 +693,12 @@ label:has(input[type="checkbox"]) {
   gap: 5px;
 }
 
+.log-status span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .status-done {
   font-size: 12px;
   font-family: var(--mf);
@@ -795,6 +807,20 @@ label:has(input[type="checkbox"]) {
 }
 
 .entry-row:last-child { border-bottom: none; }
+
+.btn-delete {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.btn-delete:hover { color: var(--bad); }
 
 .entry-time {
   font-family: var(--mf);

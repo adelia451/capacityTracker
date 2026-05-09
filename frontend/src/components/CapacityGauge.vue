@@ -1,15 +1,22 @@
-<script setup>
-// props: score (number) and max (number, defaults to 10)
-const props = defineProps({
-  score: { type: Number, default: 0 },
-  max:   { type: Number, default: 10 }
-})
-
-const r  = 46
-const cx = 54
-const cy = 54
-const C  = 2 * Math.PI * r          // full circumference
-const filled = (props.score / props.max) * C  // how much of the arc to fill
+<script>
+export default {
+  name: 'CapacityGauge',
+  props: {
+    score: { type: Number, default: 0 },
+    max:   { type: Number, default: 10 }
+  },
+  data() {
+    return {
+      r:  46,
+      cx: 54,
+      cy: 54
+    }
+  },
+  computed: {
+    C()      { return 2 * Math.PI * this.r },
+    filled() { return (this.score / this.max) * this.C }
+  }
+}
 </script>
 
 <template>
@@ -34,14 +41,13 @@ const filled = (props.score / props.max) * C  // how much of the arc to fill
       fill="none" stroke="url(#capGrad)" stroke-width="8"
       :stroke-dasharray="`${filled} ${C - filled}`"
       :stroke-dashoffset="C * 0.25"
-      stroke-linecap="round"
-      style="filter: drop-shadow(0 0 10px var(--accent-pink)); animation: ring-pulse 3s ease-in-out infinite"/>
+      stroke-linecap="round"/>
 
     <defs>
       <linearGradient id="capGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%"   stop-color="var(--accent-pink)"/>
-        <stop offset="50%"  stop-color="var(--purple)"/>
-        <stop offset="100%" stop-color="var(--text-muted)"/>
+        <stop offset="0%"   stop-color="var(--light-yellow)"/>
+        <stop offset="50%"  stop-color="var(--light-cyan)"/>
+        <stop offset="100%" stop-color="var(--light-purple)"/>
       </linearGradient>
     </defs>
 

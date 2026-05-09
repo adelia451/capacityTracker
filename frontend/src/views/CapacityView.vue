@@ -1,24 +1,33 @@
-<script setup>
-import { ref, onMounted } from 'vue'
+<script>
 import { useCapacityStore } from '../stores/capacity'
 import { useLogsStore } from '../stores/logs'
 import CapacityGauge from '../components/CapacityGauge.vue'
 
-const capacityStore = useCapacityStore()
-const logsStore = useLogsStore()
-const today = new Date().toLocaleDateString('en-CA')
-
-const error = ref(null)
-
-onMounted(async () => {
-  try {
-    await logsStore.fetchTodayLog(today)
-    await capacityStore.fetchCapacity(today)
-    await capacityStore.fetchPrediction()
-  } catch {
-    error.value = 'Could not load capacity data. Check your connection.'
+export default {
+  name: 'CapacityView',
+  components: { CapacityGauge },
+  setup() {
+    return {
+      capacityStore: useCapacityStore(),
+      logsStore: useLogsStore()
+    }
+  },
+  data() {
+    return {
+      today: new Date().toLocaleDateString('en-CA'),
+      error: null
+    }
+  },
+  async mounted() {
+    try {
+      await this.logsStore.fetchTodayLog(this.today)
+      await this.capacityStore.fetchCapacity(this.today)
+      await this.capacityStore.fetchPrediction()
+    } catch {
+      this.error = 'Could not load capacity data. Check your connection.'
+    }
   }
-})
+}
 </script>
 
 <template>
@@ -40,16 +49,20 @@ onMounted(async () => {
           <!-- mini log status -->
           <div class="log-status">
             <span :class="logsStore.todayLog?.sleep?.hours ? 'status-done' : 'status-missing'">
-              {{ logsStore.todayLog?.sleep?.hours ? '✓' : '○' }} sleep
+              <span class="material-symbols-rounded" :class="{ filled: logsStore.todayLog?.sleep?.hours }" style="font-size:16px;">{{ logsStore.todayLog?.sleep?.hours ? 'check_circle' : 'radio_button_unchecked' }}</span>
+              sleep
             </span>
             <span :class="(logsStore.todayLog?.medication?.takenAt || logsStore.todayLog?.medication?.skipped) ? 'status-done' : 'status-missing'">
-              {{ (logsStore.todayLog?.medication?.takenAt || logsStore.todayLog?.medication?.skipped) ? '✓' : '○' }} medication
+              <span class="material-symbols-rounded" :class="{ filled: logsStore.todayLog?.medication?.takenAt || logsStore.todayLog?.medication?.skipped }" style="font-size:16px;">{{ (logsStore.todayLog?.medication?.takenAt || logsStore.todayLog?.medication?.skipped) ? 'check_circle' : 'radio_button_unchecked' }}</span>
+              medication
             </span>
             <span :class="logsStore.todayLog?.moodLogs?.length ? 'status-done' : 'status-missing'">
-              {{ logsStore.todayLog?.moodLogs?.length ? '✓' : '○' }} mood
+              <span class="material-symbols-rounded" :class="{ filled: logsStore.todayLog?.moodLogs?.length }" style="font-size:16px;">{{ logsStore.todayLog?.moodLogs?.length ? 'check_circle' : 'radio_button_unchecked' }}</span>
+              mood
             </span>
             <span :class="logsStore.todayLog?.stressLogs?.length ? 'status-done' : 'status-missing'">
-              {{ logsStore.todayLog?.stressLogs?.length ? '✓' : '○' }} stress
+              <span class="material-symbols-rounded" :class="{ filled: logsStore.todayLog?.stressLogs?.length }" style="font-size:16px;">{{ logsStore.todayLog?.stressLogs?.length ? 'check_circle' : 'radio_button_unchecked' }}</span>
+              stress
             </span>
           </div>
 
@@ -77,7 +90,7 @@ onMounted(async () => {
           class="factor-row" :class="factor.neutral ? 'factor-neutral' : factor.positive ? 'factor-pos' : 'factor-neg'">
           <span>{{ factor.label }}</span>
           <span class="factor-impact" :class="factor.neutral ? 'neutral' : factor.positive ? 'positive' : 'negative'">
-            {{ factor.neutral ? '~' : factor.positive ? '+' : '-' }}{{ Math.round(factor.impact * 100) / 100 }}
+            <span class="material-symbols-rounded" style="font-size:14px; vertical-align:middle;">{{ factor.neutral ? 'remove' : factor.positive ? 'arrow_upward' : 'arrow_downward' }}</span>{{ Math.round(factor.impact * 100) / 100 }}
           </span>
         </div>
       </div>
