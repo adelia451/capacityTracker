@@ -12,6 +12,8 @@ import { ref } from 'vue'
 // axios is the library used to make HTTP requests to the backend
 import axios from 'axios'
 
+const API = import.meta.env.VITE_API_URL
+
 
 // ---------- FUNCTIONS ----------
 // "export const" makes it importable in any component that needs it
@@ -27,7 +29,7 @@ export const useLogsStore = defineStore('logs', () => {
   // async function = can use "await" inside it to wait for the backend to respond
   async function saveSleep(date, sleepData) {
     try {
-      const res = await axios.post('http://localhost:3000/api/logs', {
+      const res = await axios.post(`${API}/api/logs`, {
         date,
         sleep: sleepData
       })
@@ -39,10 +41,10 @@ export const useLogsStore = defineStore('logs', () => {
       // if a log already exists for today the backend returns 400
       // so instead we fetch today's log to get its _id, then PUT to update it
       if (err.response?.status === 400) {
-        const existing = await axios.get(`http://localhost:3000/api/logs/${date}`)
+        const existing = await axios.get(`${API}/api/logs/${date}`)
 
         const res = await axios.put(
-          `http://localhost:3000/api/logs/${existing.data._id}`,
+          `${API}/api/logs/${existing.data._id}`,
           { sleep: sleepData }
         )
 
@@ -58,7 +60,7 @@ export const useLogsStore = defineStore('logs', () => {
   // ---------- SAVE NAP ----------
   async function saveNap(date, napData) {
     try {
-        const res = await axios.post('http://localhost:3000/api/logs', {
+        const res = await axios.post(`${API}/api/logs`, {
         date,
         naps: [napData]
       })
@@ -70,7 +72,7 @@ export const useLogsStore = defineStore('logs', () => {
       if (err.response?.status === 400) {
         try {
           // get the existing log so we can append to naps
-          const existing = await axios.get(`http://localhost:3000/api/logs/${date}`)
+          const existing = await axios.get(`${API}/api/logs/${date}`)
 
           const updatedNaps = [
             ...(existing.data.naps || []), // keep existing naps
@@ -79,7 +81,7 @@ export const useLogsStore = defineStore('logs', () => {
 
           // update the log with the new naps array
           const res = await axios.put(
-            `http://localhost:3000/api/logs/${existing.data._id}`,
+            `${API}/api/logs/${existing.data._id}`,
             { naps: updatedNaps }
           )
 
@@ -101,7 +103,7 @@ export const useLogsStore = defineStore('logs', () => {
   // ---------- SAVE MOOD ----------
   async function saveMood(date, moodData) {
     try {
-      const res = await axios.post('http://localhost:3000/api/logs', {
+      const res = await axios.post(`${API}/api/logs`, {
         date,
         moodLogs: [moodData] // array because schema expects list
       })
@@ -111,7 +113,7 @@ export const useLogsStore = defineStore('logs', () => {
     } catch (err) {
       if (err.response?.status === 400) {
         try {
-          const existing = await axios.get(`http://localhost:3000/api/logs/${date}`)
+          const existing = await axios.get(`${API}/api/logs/${date}`)
 
           const updatedMoodLogs = [
             ...(existing.data.moodLogs || []),
@@ -119,7 +121,7 @@ export const useLogsStore = defineStore('logs', () => {
           ]
 
           const res = await axios.put(
-            `http://localhost:3000/api/logs/${existing.data._id}`,
+            `${API}/api/logs/${existing.data._id}`,
             { moodLogs: updatedMoodLogs }
           )
 
@@ -139,7 +141,7 @@ export const useLogsStore = defineStore('logs', () => {
 // ---------- SAVE STRESS ----------
 async function saveStress(date, stressData) {
   try {
-    const res = await axios.post('http://localhost:3000/api/logs', {
+    const res = await axios.post(`${API}/api/logs`, {
       date,
       stressLogs: [stressData]
     })
@@ -149,7 +151,7 @@ async function saveStress(date, stressData) {
   } catch (err) {
     if (err.response?.status === 400) {
       try {
-        const existing = await axios.get(`http://localhost:3000/api/logs/${date}`)
+        const existing = await axios.get(`${API}/api/logs/${date}`)
 
         const updatedStressLogs = [
           ...(existing.data.stressLogs || []),
@@ -157,7 +159,7 @@ async function saveStress(date, stressData) {
         ]
 
         const res = await axios.put(
-          `http://localhost:3000/api/logs/${existing.data._id}`,
+          `${API}/api/logs/${existing.data._id}`,
           { stressLogs: updatedStressLogs }
         )
 
@@ -178,7 +180,7 @@ async function saveStress(date, stressData) {
   // used by MedicationView on mount to pre-fill the form with whatever was already saved
   async function fetchTodayLog(date) {
     try {
-      const res = await axios.get(`http://localhost:3000/api/logs/${date}`)
+      const res = await axios.get(`${API}/api/logs/${date}`)
       todayLog.value = res.data
     } catch (err) {
       if (err.response?.status === 404) {
@@ -192,7 +194,7 @@ async function saveStress(date, stressData) {
   // ---------- SAVE MEDICATION ----------
   async function saveMedication(date, medData) {
     try {
-      const res = await axios.post('http://localhost:3000/api/logs', {
+      const res = await axios.post(`${API}/api/logs`, {
         date,
         medication: medData
       })
@@ -200,9 +202,9 @@ async function saveStress(date, stressData) {
     } catch (err) {
       if (err.response?.status === 400) {
         try {
-          const existing = await axios.get(`http://localhost:3000/api/logs/${date}`)
+          const existing = await axios.get(`${API}/api/logs/${date}`)
           const res = await axios.put(
-            `http://localhost:3000/api/logs/${existing.data._id}`,
+            `${API}/api/logs/${existing.data._id}`,
             { medication: medData }
           )
           todayLog.value = res.data
@@ -220,7 +222,7 @@ async function saveStress(date, stressData) {
   // ---------- DELETE ENTRIES ----------
   async function deleteMoodEntry(logId, entryId) {
     try {
-      const res = await axios.delete(`http://localhost:3000/api/logs/${logId}/mood/${entryId}`)
+      const res = await axios.delete(`${API}/api/logs/${logId}/mood/${entryId}`)
       todayLog.value = res.data
     } catch (err) {
       console.error('Failed to delete mood entry:', err)
@@ -229,7 +231,7 @@ async function saveStress(date, stressData) {
 
   async function deleteStressEntry(logId, entryId) {
     try {
-      const res = await axios.delete(`http://localhost:3000/api/logs/${logId}/stress/${entryId}`)
+      const res = await axios.delete(`${API}/api/logs/${logId}/stress/${entryId}`)
       todayLog.value = res.data
     } catch (err) {
       console.error('Failed to delete stress entry:', err)
@@ -238,7 +240,7 @@ async function saveStress(date, stressData) {
 
   async function deleteNapEntry(logId, entryId) {
     try {
-      const res = await axios.delete(`http://localhost:3000/api/logs/${logId}/nap/${entryId}`)
+      const res = await axios.delete(`${API}/api/logs/${logId}/nap/${entryId}`)
       todayLog.value = res.data
     } catch (err) {
       console.error('Failed to delete nap entry:', err)
@@ -248,7 +250,7 @@ async function saveStress(date, stressData) {
   // ---------- SAVE ALCOHOL ----------
   async function saveAlcohol(date, drinks) {
     try {
-      const res = await axios.post('http://localhost:3000/api/logs', {
+      const res = await axios.post(`${API}/api/logs`, {
         date,
         alcohol: drinks
       })
@@ -256,9 +258,9 @@ async function saveStress(date, stressData) {
     } catch (err) {
       if (err.response?.status === 400) {
         try {
-          const existing = await axios.get(`http://localhost:3000/api/logs/${date}`)
+          const existing = await axios.get(`${API}/api/logs/${date}`)
           const res = await axios.put(
-            `http://localhost:3000/api/logs/${existing.data._id}`,
+            `${API}/api/logs/${existing.data._id}`,
             { alcohol: drinks }
           )
           todayLog.value = res.data
@@ -276,7 +278,7 @@ async function saveStress(date, stressData) {
   // ---------- SAVE RATING ----------
   async function saveRating(date, rating) {
     try {
-      const res = await axios.post('http://localhost:3000/api/logs', {
+      const res = await axios.post(`${API}/api/logs`, {
         date,
         actualCapacityRating: rating
       })
@@ -284,9 +286,9 @@ async function saveStress(date, stressData) {
     } catch (err) {
       if (err.response?.status === 400) {
         try {
-          const existing = await axios.get(`http://localhost:3000/api/logs/${date}`)
+          const existing = await axios.get(`${API}/api/logs/${date}`)
           const res = await axios.put(
-            `http://localhost:3000/api/logs/${existing.data._id}`,
+            `${API}/api/logs/${existing.data._id}`,
             { actualCapacityRating: rating }
           )
           todayLog.value = res.data

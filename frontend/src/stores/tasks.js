@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import axios from 'axios'
 
+const API = import.meta.env.VITE_API_URL
+
 export const useTasksStore = defineStore('tasks', () => {
 
   const tasks = ref([])
@@ -12,8 +14,8 @@ export const useTasksStore = defineStore('tasks', () => {
     loading.value = true
     error.value = null
     try {
-      await axios.post('http://localhost:3000/api/gcal/sync')
-      const res = await axios.get(`http://localhost:3000/api/tasks/${date}`)
+      await axios.post(`${API}/api/gcal/sync`)
+      const res = await axios.get(`${API}/api/tasks/${date}`)
       tasks.value = res.data
     } catch (err) {
       if (err.response?.status === 404) {
@@ -29,7 +31,7 @@ export const useTasksStore = defineStore('tasks', () => {
 
   async function updateTask(id, data) {
     try {
-      const res = await axios.put(`http://localhost:3000/api/tasks/${id}`, data)
+      const res = await axios.put(`${API}/api/tasks/${id}`, data)
       const i = tasks.value.findIndex(t => t._id === id)
       if (i > -1) tasks.value[i] = res.data
     } catch (err) {
