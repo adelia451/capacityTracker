@@ -32,13 +32,13 @@ export default {
     },
     totalMinutes() {
       return this.tasksStore.tasks
-        .filter(task => task.completed || !task.timesPostponed)
+        .filter(task => task.completed || !task.postponedDates?.includes(this.today))
         .reduce((sum, task) => sum + (task.timeSpent || 0), 0)
     },
     minutesByCategory() {
       const map = {}
       this.tasksStore.tasks
-        .filter(task => task.completed || !task.timesPostponed)
+        .filter(task => task.completed || !task.postponedDates?.includes(this.today))
         .forEach(task => {
           if (!map[task.category]) map[task.category] = 0
           map[task.category] += task.timeSpent || 0
