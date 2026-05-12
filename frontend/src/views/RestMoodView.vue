@@ -90,37 +90,49 @@ export default {
     async saveSleep() {
       if (!this.bedTime || !this.wakeTime) { this.message = 'Please enter bed time and wake time'; return }
       if (!this.sleepState) { this.message = 'Please select a sleep state'; return }
-      let minutes = this.timeToMinutes(this.wakeTime) - this.timeToMinutes(this.bedTime)
-      if (minutes < 0) minutes += 1440
-      const hours = minutes / 60
-      await this.logsStore.saveSleep(this.today, { start: this.bedTime, end: this.wakeTime, hours, state: this.sleepState })
-      const h = Math.floor(hours)
-      const m = Math.round((hours - h) * 60)
-      this.calculatedHours = `${h} hours ${m} minutes`
-      this.message = 'Sleep logged!'
+      try {
+        let minutes = this.timeToMinutes(this.wakeTime) - this.timeToMinutes(this.bedTime)
+        if (minutes < 0) minutes += 1440
+        const hours = minutes / 60
+        await this.logsStore.saveSleep(this.today, { start: this.bedTime, end: this.wakeTime, hours, state: this.sleepState })
+        const h = Math.floor(hours)
+        const m = Math.round((hours - h) * 60)
+        this.calculatedHours = `${h} hours ${m} minutes`
+        this.message = 'Sleep logged!'
+      } catch {
+        this.message = 'Could not save. Try again.'
+      }
     },
     async saveNap() {
       if (!this.napStart || !this.napEnd) { this.message = 'Please enter nap start and end time'; return }
-      let minutes = this.timeToMinutes(this.napEnd) - this.timeToMinutes(this.napStart)
-      if (minutes < 0) minutes += 1440
-      const hours = minutes / 60
-      await this.logsStore.saveNap(this.today, { start: this.napStart, end: this.napEnd, hours, feltRestedAfter: this.feltRestedAfter })
-      const h = Math.floor(hours)
-      const m = Math.round((hours - h) * 60)
-      this.calculatedHours = `${h} hours ${m} minutes`
-      this.message = 'Nap logged!'
+      try {
+        let minutes = this.timeToMinutes(this.napEnd) - this.timeToMinutes(this.napStart)
+        if (minutes < 0) minutes += 1440
+        const hours = minutes / 60
+        await this.logsStore.saveNap(this.today, { start: this.napStart, end: this.napEnd, hours, feltRestedAfter: this.feltRestedAfter })
+        const h = Math.floor(hours)
+        const m = Math.round((hours - h) * 60)
+        this.calculatedHours = `${h} hours ${m} minutes`
+        this.message = 'Nap logged!'
+      } catch {
+        this.message = 'Could not save. Try again.'
+      }
     },
     async saveMood() {
       if (!this.mood) { this.message = 'Pick a mood first :)'; return }
-      await this.logsStore.saveMood(this.today, {
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        value: this.mood,
-        reason: this.moodReason
-      })
-      this.message = 'Mood logged'
-      this.mood = ''
-      this.moodReason = ['no clear reason']
-      await this.logsStore.fetchTodayLog(this.today)
+      try {
+        await this.logsStore.saveMood(this.today, {
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          value: this.mood,
+          reason: this.moodReason
+        })
+        this.message = 'Mood logged'
+        this.mood = ''
+        this.moodReason = ['no clear reason']
+        await this.logsStore.fetchTodayLog(this.today)
+      } catch {
+        this.message = 'Could not save. Try again.'
+      }
     },
     deleteMoodEntry(entryId) {
       this.logsStore.deleteMoodEntry(this.logsStore.todayLog._id, entryId)
@@ -133,15 +145,19 @@ export default {
     },
     async saveStress() {
       if (!this.stress) { this.message = 'Pick your stress level first :)'; return }
-      await this.logsStore.saveStress(this.today, {
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        value: this.stress,
-        reason: this.stressReason
-      })
-      this.message = 'Stress logged'
-      this.stress = ''
-      this.stressReason = ['no clear reason']
-      await this.logsStore.fetchTodayLog(this.today)
+      try {
+        await this.logsStore.saveStress(this.today, {
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          value: this.stress,
+          reason: this.stressReason
+        })
+        this.message = 'Stress logged'
+        this.stress = ''
+        this.stressReason = ['no clear reason']
+        await this.logsStore.fetchTodayLog(this.today)
+      } catch {
+        this.message = 'Could not save. Try again.'
+      }
     }
   },
   async mounted() {
@@ -182,10 +198,10 @@ export default {
       </div>
       <form @submit.prevent="saveSleep">
         <label>Fell asleep at</label>
-        <input type="text" v-model="bedTime" placeholder="HH:MM" />
+        <input type="time" v-model="bedTime" />
 
         <label>Woke up at</label>
-        <input type="text" v-model="wakeTime" placeholder="HH:MM" />
+        <input type="time" v-model="wakeTime" />
 
         <label>Woke up feeling</label>
         <div>

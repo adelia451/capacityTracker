@@ -18,12 +18,8 @@ export const useTasksStore = defineStore('tasks', () => {
       const res = await axios.get(`${API}/api/tasks/${date}`)
       tasks.value = res.data
     } catch (err) {
-      if (err.response?.status === 404) {
-        tasks.value = []
-      } else {
-        error.value = 'Could not load tasks. Check your connection.'
-        console.error('Failed to sync/fetch tasks:', err)
-      }
+      error.value = 'Could not load tasks. Check your connection.'
+      console.error('Failed to sync/fetch tasks:', err)
     } finally {
       loading.value = false
     }

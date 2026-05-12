@@ -18,9 +18,9 @@ export default {
       feltOnset: '',
       feltPeak: '',
       feltEnd: '',
-      medQuality: [],
+      medQuality: '',
       medQualityOptions: ['no effect', 'lightly felt', 'felt', 'strongly felt'],
-      focusQuality: [],
+      focusQuality: '',
       focusQualityOptions: ['unfocused', 'focused', 'locked-in'],
       skipped: false,
       selectedSkipReasons: [],
@@ -29,15 +29,10 @@ export default {
       boundKeydown: null
     }
   },
+  watch: {
+    activeTab() { this.message = '' }
+  },
   methods: {
-    toggleMedQuality(val) {
-      const i = this.medQuality.indexOf(val)
-      i > -1 ? this.medQuality.splice(i, 1) : this.medQuality.push(val)
-    },
-    toggleFocusQuality(val) {
-      const i = this.focusQuality.indexOf(val)
-      i > -1 ? this.focusQuality.splice(i, 1) : this.focusQuality.push(val)
-    },
     toggleSkipReason(val) {
       const i = this.selectedSkipReasons.indexOf(val)
       i > -1 ? this.selectedSkipReasons.splice(i, 1) : this.selectedSkipReasons.push(val)
@@ -68,22 +63,30 @@ export default {
       return Math.round(((eh * 60 + em) - (oh * 60 + om)) / 60 * 10) / 10
     },
     async saveMed() {
-      await this.logsStore.saveMedication(this.today, {
-        takenAt: this.takenAt,
-        feltOnset: this.feltOnset,
-        feltPeak: this.feltPeak,
-        feltEnd: this.feltEnd,
-        focusCapacityHours: this.calcFocusHours(),
-        medQuality: this.medQuality,
-        focusQuality: this.focusQuality,
-        skipped: this.skipped,
-        skipReasons: this.selectedSkipReasons
-      })
-      this.message = 'Saved!'
+      try {
+        await this.logsStore.saveMedication(this.today, {
+          takenAt: this.takenAt,
+          feltOnset: this.feltOnset,
+          feltPeak: this.feltPeak,
+          feltEnd: this.feltEnd,
+          focusCapacityHours: this.calcFocusHours(),
+          medQuality: this.medQuality,
+          focusQuality: this.focusQuality,
+          skipped: this.skipped,
+          skipReasons: this.selectedSkipReasons
+        })
+        this.message = 'Saved!'
+      } catch {
+        this.message = 'Could not save. Try again.'
+      }
     },
     async saveAlcohol() {
-      await this.logsStore.saveAlcohol(this.today, this.alcoholDrinks ?? 0)
-      this.message = 'Saved!'
+      try {
+        await this.logsStore.saveAlcohol(this.today, this.alcoholDrinks ?? 0)
+        this.message = 'Saved!'
+      } catch {
+        this.message = 'Could not save. Try again.'
+      }
     }
   },
   async mounted() {
@@ -97,8 +100,8 @@ export default {
       this.feltOnset           = med.feltOnset || ''
       this.feltPeak            = med.feltPeak || ''
       this.feltEnd             = med.feltEnd || ''
-      this.medQuality          = med.medQuality || []
-      this.focusQuality        = med.focusQuality || []
+      this.medQuality          = med.medQuality || ''
+      this.focusQuality        = med.focusQuality || ''
       this.skipped             = med.skipped || false
       this.selectedSkipReasons = med.skipReasons || []
     }
@@ -148,29 +151,29 @@ export default {
 
         <div v-else style="display: contents">
           <label>Taken at</label>
-          <input type="text" v-model="takenAt" placeholder="HH:MM" />
+          <input type="time" v-model="takenAt" />
 
           <label>Felt onset</label>
-          <input type="text" v-model="feltOnset" placeholder="HH:MM" />
+          <input type="time" v-model="feltOnset" />
 
           <label>Felt peak</label>
-          <input type="text" v-model="feltPeak" placeholder="HH:MM" />
+          <input type="time" v-model="feltPeak" />
 
           <label>Felt end</label>
-          <input type="text" v-model="feltEnd" placeholder="HH:MM" />
+          <input type="time" v-model="feltEnd" />
 
           <label>Med quality</label>
           <div>
             <button v-for="option in medQualityOptions" :key="option" type="button"
-              :class="{ selected: medQuality.includes(option) }"
-              @click="toggleMedQuality(option)">{{ option }}</button>
+              :class="{ selected: medQuality === option }"
+              @click="medQuality = option">{{ option }}</button>
           </div>
 
           <label style="margin-top: 14px;">Focus quality</label>
           <div>
             <button v-for="option in focusQualityOptions" :key="option" type="button"
-              :class="{ selected: focusQuality.includes(option) }"
-              @click="toggleFocusQuality(option)">{{ option }}</button>
+              :class="{ selected: focusQuality === option }"
+              @click="focusQuality = option">{{ option }}</button>
           </div>
         </div>
 

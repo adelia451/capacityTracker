@@ -31,9 +31,13 @@ export default {
       return `${hrs}h ${mins}m`
     },
     async saveRating(n) {
-      await this.logsStore.saveRating(this.today, n)
-      this.ratingMessage = 'Rating saved!'
-      await this.logsStore.fetchTodayLog(this.today)
+      try {
+        await this.logsStore.saveRating(this.today, n)
+        this.ratingMessage = 'Rating saved!'
+        await this.logsStore.fetchTodayLog(this.today)
+      } catch {
+        this.ratingMessage = 'Could not save. Try again.'
+      }
     }
   },
   async mounted() {

@@ -136,7 +136,23 @@ mounted() {
 
 ### POST-or-PUT Pattern (Logs Store)
 
-The backend only allows one daily log per date. When saving any field, the store tries a POST first. If it gets a 400 (log already exists), it fetches the existing log's `_id` and sends a PUT instead. All six save actions follow this pattern. See `stores/logs.js` for the full implementation.
+The backend only allows one daily log per date. When saving any field, the store tries a POST first. If it gets a 400 (log already exists), it fetches the existing log's `_id` and sends a PUT instead.
+
+All save actions share a single internal helper `upsertLog(date, fields, appendEntry)` in `stores/logs.js`. The third argument is only used for fields that append to an array (moods, stress entries, naps). For scalar fields (sleep, medication, alcohol, rating) it is omitted.
+
+```js
+// scalar replacement
+async function saveSleep(date, sleepData) {
+  await upsertLog(date, { sleep: sleepData })
+}
+
+// array append — merges new entry into existing array on PUT
+async function saveMood(date, moodData) {
+  await upsertLog(date, {}, { field: 'moodLogs', value: moodData })
+}
+```
+
+When `appendEntry` is provided and the log already exists, `upsertLog` fetches the existing array and spreads the new entry in: `[...existing.moodLogs, moodData]`. On a fresh POST (no existing log) it wraps the entry in a new array automatically.
 
 ### Tabbed Views
 
@@ -153,18 +169,61 @@ data() {
 
 The template uses `v-if="activeTab === 'sleep'"` on each section. Switching tabs just updates `activeTab`.
 
-### Multi-Select Toggle Pattern
+### Time Inputs
 
-Medication quality, focus quality, skip reasons, mood reasons, and stress reasons all support picking multiple options at once. Each uses an array in `data()` and a toggle method:
+All time inputs use `type="time"` (not `type="text"`). This gives the browser's native time picker, which displays in AM/PM on Windows. The `v-model` value is always stored and sent to the backend as `"HH:MM"` in 24-hour format internally — the AM/PM display is handled entirely by the browser. The `timeToMinutes` helper used in sleep and nap calculations parses this format correctly.
+
+### Single-Select vs Multi-Select Buttons
+
+Some button groups pick one value (single-select), others allow multiple (multi-select).
+
+**Single-select** — the value is a plain string in `data()`. Clicking a button sets the string directly:
+```js
+// data
+medQuality: '',
+focusQuality: '',
+
+// template
+@click="medQuality = option"
+:class="{ selected: medQuality === option }"
+```
+Used by: med quality, focus quality, sleep state, mood value, stress value, nap rested-after, alcohol count.
+
+**Multi-select** — the value is an array in `data()` with a toggle method:
+```js
+toggleMoodReason(reason) {
+  const i = this.moodReason.indexOf(reason)
+  i > -1 ? this.moodReason.splice(i, 1) : this.moodReason.push(reason)
+}
+```
+The button's selected state is `:class="{ selected: moodReason.includes(reason) }"`.
+
+Used by: mood reasons, stress reasons, medication skip reasons.
+
+### Tab Message Clearing
+
+Both tabbed views (RestMoodView, IntakeView) use a `watch` on `activeTab` to clear the status message when the user switches tabs. Without this, a "Saved!" from one tab would persist and look like confirmation of an action on the new tab.
 
 ```js
-toggleMedQuality(val) {
-  const i = this.medQuality.indexOf(val)
-  i > -1 ? this.medQuality.splice(i, 1) : this.medQuality.push(val)
+watch: {
+  activeTab() { this.message = '' }
 }
 ```
 
-The button's selected state is `:class="{ selected: medQuality.includes(val) }"`.
+### Error Handling in Views
+
+Every async method that calls a store save action wraps it in try/catch and sets `this.message` on failure. This ensures the user always gets feedback instead of a silent failure:
+
+```js
+async saveSleep() {
+  try {
+    await this.logsStore.saveSleep(this.today, { ... })
+    this.message = 'Sleep logged!'
+  } catch {
+    this.message = 'Could not save. Try again.'
+  }
+}
+```
 
 ---
 

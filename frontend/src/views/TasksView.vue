@@ -53,7 +53,6 @@ export default {
       } else {
         this.expanded.add(id)
       }
-      this.expanded = new Set(this.expanded)
     },
     formatMinutes(mins) {
       if (!mins) return '—'
@@ -71,10 +70,10 @@ export default {
       this.tasksStore.updateTask(task._id, { effortWeight: weight })
     },
     defer(task) {
-      this.tasksStore.updateTask(task._id, { timesPostponed: (task.timesPostponed || 0) + 1 })
+      this.tasksStore.updateTask(task._id, { timesPostponed: (task.timesPostponed || 0) + 1, postponedDate: this.today })
     },
     undoDefer(task) {
-      this.tasksStore.updateTask(task._id, { timesPostponed: Math.max(0, (task.timesPostponed || 0) - 1) })
+      this.tasksStore.updateTask(task._id, { timesPostponed: Math.max(0, (task.timesPostponed || 0) - 1), removePostponedDate: this.today })
     },
     complete(task) {
       this.tasksStore.updateTask(task._id, { completed: !task.completed })
