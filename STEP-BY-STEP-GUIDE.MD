@@ -273,20 +273,46 @@ All styles are in one file (`style.css`) using CSS custom properties for the pal
 
 ## Part 5 : Deployment
 
-*(To be completed during Week 15)*
+This app is deployed on a personal server running Ubuntu with nginx as a reverse proxy. The backend runs as a Node process managed by PM2. nginx forwards all traffic to the Node backend, which handles both the API routes and serving the built frontend static files via `express.static`.
 
----
+1. SSH into the server.
 
-## How the Pieces Connect
+2. Check which ports are already in use and pick a free one:
+
+```bash
+ss -tlnp | grep LISTEN
+```
+
+3. Clone both repositories onto the server.
+
+4. In your backend repository, run `npm install` and create a `.env` file with the same variables as your local setup, using your chosen port and production values.
+
+5. Start the backend with PM2, replacing (your chosen name) with whatever you want to call the process:
+
+```bash
+pm2 start server.js --name (your chosen name)
+pm2 save
+pm2 startup
+```
+
+`pm2 startup` prints a command. Copy and run it to make PM2 survive server reboots.
+
+6. In your frontend repository, create a `.env` file pointing to your production domain:
 
 ```
-Browser URL
-    ↓
-Vue Router (router/index.js)   ← picks which View to render
-    ↓
-View component (views/*.vue)   ← reads/writes via Pinia stores
-    ↓
-Pinia store (stores/*.js)      ← calls backend via axios using VITE_API_URL
-    ↓
-Backend API (port 3000)        ← reads/writes MongoDB Atlas
+VITE_API_URL=http://yourdomain.com
 ```
+
+Then run `npm install` and `npm run build`. This creates a `dist/` folder that the backend serves via `express.static`.
+
+7. Create an nginx config for your site. nginx should be set up as a pure reverse proxy, forwarding all traffic to your Node backend on the port you chose. Enable the site with a symlink, test the config with `nginx -t`, and reload nginx.
+
+8. Run certbot to get an SSL certificate for your domain. After this, update your frontend `.env` to use `https` instead of `http` and rebuild with `npm run build`.
+
+9. Updating after code changes:
+
+Backend: pull the latest code, run `npm install`, then restart the PM2 process.
+
+Frontend: pull the latest code, run `npm install`, then rebuild with `npm run build`.
+
+
